@@ -3,7 +3,20 @@
     <div class="flex-centered">
       <div class="game-area">
         <div class="nav-bar">
-          Buttons here
+          <div class="inventory-panel">
+            <div class="inventory gold-tab">
+              <div>{{goldCount}}</div>
+              <div>{{goldBonus}}%</div>
+            </div>
+            <div class="inventory gems-tab">
+              <div>18</div>
+              <div>+23%</div>
+            </div>
+            <div class="inventory vip-tab">
+              <div>1 Diamond</div>
+              <div>1 Ticket</div>
+            </div>
+          </div>
         </div>
           <div class="left">
             <div class="small-menu"></div>
@@ -50,6 +63,14 @@ export default {
       monsterMaxHP: '',
       image: '',
       monsterName: '',
+      goldCount: 0,
+      goldBonus: 1,
+      vipCount: 0,
+      vipBonus: 0,
+      gemCount: 0,
+      gemBonus: 0,
+      level: 0,
+      rebirth: 0,
       monsters: [
       {
         image: 'bug.svg',
@@ -100,6 +121,8 @@ export default {
       }
     },
     killMonster() {
+      //add some gold!
+      this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * (((0.1 * this.goldBonus)*100)+1));
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -121,15 +144,14 @@ export default {
       var imageObj = new Image();
       imageObj.src = this.image;
       var imgX = 75;
+      var imageX = 300;
+      var imageY = 400;
       var step = 1;
       var stepMin = 0
       var stepMax = 25
       var canvas_size_x = 460;
       var canvas_size_y = 530;
       var reverse = false;
-            imageObj.onload = function() {
-        context.drawImage(imageObj, 69, 50); 
-      };
 
         function draw() {
           context.clearRect(0, 0, canvas_size_x, canvas_size_y);
@@ -148,7 +170,7 @@ export default {
             }
 
           }
-       context.drawImage(imageObj, 75, step);
+       context.drawImage(imageObj, 75, step, imageX, imageY);
        global.requestAnimationFrame(draw)
       }
       draw()
@@ -217,25 +239,75 @@ body {
     background: grey;
     position: relative;
     overflow: hidden;
+    background-image: URL('game-bg.svg');
 }
 .nav-bar {
     height: 4em;
-    background: #525252;
     color: white;
+}
+.inventory-panel {
+    padding-left: 6%;
+    display: flex;
+    width: 66%;
+    height: 100%;
+    justify-content: space-between;
+}
+.inventory.gold-tab {
+  position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 1em;
+    padding: 1em;
+    background: #464439;
+    margin: 0.5em;
+    width: 10em;
+    align-items: center;
+    height: 5em;
+}
+.inventory.gold-tab:before {
+    content: ' ';
+    background-image: url('/coin.svg');
+    position: absolute;
+    left: -2em;
+    bottom: 0;
+    height: 5em;
+    width: 5em;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.inventory.gems-tab {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1em;
+    padding: 1em;
+    background: #464439;
+    margin: 0.5em;
+    width: 10em;
+    align-items: center;
+    height: 5em;
+}
+.inventory.vip-tab {
+    display: flex;
+    height: 5em;
+    flex-direction: column;
+    border-radius: 1em;
+    padding: 1em;
+    background: #464439;
+    margin: 0.5em;
+    width: 10em;
+    align-items: center;
 }
 .left {
     position: absolute;
     left: 0;
     width: 480px;
     height: 530px;
-    background: #523535;
     bottom: 0;
 }
 .right {
     position: absolute;
     width: 460px;
     height: 530px;
-    background: #4b4b52;
     right: 0;
     bottom: 0;
 }
