@@ -128,10 +128,10 @@ export default {
       var canvas_size_y = 530;
       var reverse = false;
             imageObj.onload = function() {
-        context.drawImage(imageObj, 69, 50);
-      //  setInterval(function(){ myAnimation(); }, 10); 
+        context.drawImage(imageObj, 69, 50); 
       };
-        function myAnimation() {
+
+        function draw() {
           context.clearRect(0, 0, canvas_size_x, canvas_size_y);
           if(!reverse){
             step = step + 1;
@@ -149,7 +149,9 @@ export default {
 
           }
        context.drawImage(imageObj, 75, step);
+       global.requestAnimationFrame(draw)
       }
+      draw()
     },
     getHealthColor(num){
       if(num >= 66 )
