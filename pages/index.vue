@@ -5,8 +5,8 @@
         <div class="nav-bar">
           <div class="inventory-panel">
             <div class="inventory gold-tab">
-              <div>{{goldCount}}</div>
-              <div>{{goldBonus}}%</div>
+              <div class="item-count"><span class="large-btn-text">{{goldCount}}</span></div>
+              <div class="item-bonus"><span class="med-btn-text">+{{goldBonus}}%</span></div>
             </div>
             <div class="inventory gems-tab">
               <div>18</div>
@@ -64,7 +64,7 @@ export default {
       image: '',
       monsterName: '',
       goldCount: 0,
-      goldBonus: 1,
+      goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
       gemCount: 0,
@@ -122,7 +122,7 @@ export default {
     },
     killMonster() {
       //add some gold!
-      this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * (((0.1 * this.goldBonus)*100)+1));
+      this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * Math.floor(((this.goldBonus / 100) + 1)));
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
@@ -253,49 +253,81 @@ body {
     justify-content: space-between;
 }
 .inventory.gold-tab {
-  position: relative;
+    position: relative;
     display: flex;
     flex-direction: column;
     border-radius: 1em;
-    padding: 1em;
-    background: #464439;
+
+    background: #908960;
+    box-shadow: 0px 0px 0 3px #464439;
     margin: 0.5em;
     width: 10em;
     align-items: center;
-    height: 5em;
+    height: 76px;
 }
 .inventory.gold-tab:before {
     content: ' ';
-    background-image: url('/coin.svg');
+    background-image: url(/coin.svg);
     position: absolute;
     left: -2em;
-    bottom: 0;
-    height: 5em;
-    width: 5em;
+    bottom: -3px;
+    height: 82px;
+    width: 82px;
     background-repeat: no-repeat;
     background-size: cover;
 }
 .inventory.gems-tab {
+    position: relative;
     display: flex;
     flex-direction: column;
     border-radius: 1em;
-    padding: 1em;
-    background: #464439;
+    background: #908960;
+    box-shadow: 0px 0px 0 3px #464439;
     margin: 0.5em;
     width: 10em;
     align-items: center;
-    height: 5em;
+    height: 76px;
+}
+span.large-btn-text {
+    font-size: 1.7em;
+}
+span.med-btn-text {
+    font-size: 1.1em;
+}
+.item-count {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    background: #90bba9;
+    border-top-right-radius: 1em;
+    padding-left: 1.5em;
+    color: white;
+    justify-content: center;
+    align-items: center;
+}
+.item-bonus {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    background: #647f96;
+    border-bottom-right-radius: 1em;
+    padding-left: 1.5em;
+    color: white;
+    justify-content: center;
+    align-items: center;
+
 }
 .inventory.vip-tab {
+    position: relative;
     display: flex;
-    height: 5em;
     flex-direction: column;
     border-radius: 1em;
-    padding: 1em;
-    background: #464439;
+    background: #908960;
+    box-shadow: 0px 0px 0 3px #464439;
     margin: 0.5em;
     width: 10em;
     align-items: center;
+    height: 76px;
 }
 .left {
     position: absolute;

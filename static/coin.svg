@@ -25,7 +25,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="8"
      inkscape:cx="33.971311"
-     inkscape:cy="53.659021"
+     inkscape:cy="43.659021"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -53,36 +53,38 @@
      inkscape:groupmode="layer"
      inkscape:label="Layer 1">
     <circle
-       style="opacity:1;fill:#464439;fill-opacity:1;stroke:none;stroke-width:0.82555419;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#464439;fill-opacity:1;stroke:none;stroke-width:0.85739803;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4474-7"
-       cx="31.562223"
-       cy="31.849388"
-       r="30.786072" />
+       cx="32.124725"
+       cy="32.036888"
+       r="31.973572" />
     <circle
-       style="opacity:1;fill:#ffd90e;fill-opacity:1;stroke:none;stroke-width:0.77933514;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffd90e;fill-opacity:1;stroke:none;stroke-width:0.80939615;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4474"
-       cx="31.5625"
-       cy="31.8125"
-       r="29.0625" />
+       cx="32.125011"
+       cy="31.998577"
+       r="30.183517" />
     <circle
-       style="opacity:1;fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.68715572;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#ffcc00;fill-opacity:1;stroke:none;stroke-width:0.71366113;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4474-0"
-       cx="31.5625"
-       cy="32.1875"
-       r="25.625" />
+       cx="32.125011"
+       cy="32.388042"
+       r="26.613422" />
     <path
-       style="opacity:1;fill:#ffe821;fill-opacity:1;stroke:none;stroke-width:0.77933514;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 31.642578 2.7636719 A 29.0625 29.0625 0 0 0 4.3183594 22.035156 A 29.0625 29.0625 0 0 1 30.669922 5.1503906 A 29.0625 29.0625 0 0 1 59.732422 34.212891 A 29.0625 29.0625 0 0 1 57.996094 44.005859 A 29.0625 29.0625 0 0 0 60.705078 31.826172 A 29.0625 29.0625 0 0 0 31.642578 2.7636719 z "
-       id="path4474-5" />
+       style="opacity:1;fill:#ffe821;fill-opacity:1;stroke:none;stroke-width:0.80939615;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 32.208178,1.8292591 A 30.183517,30.183517 0 0 0 3.8299916,21.844095 30.183517,30.183517 0 0 1 31.198004,4.3080398 30.183517,30.183517 0 0 1 61.38152,34.491557 30.183517,30.183517 0 0 1 59.578218,44.662267 30.183517,30.183517 0 0 0 62.391694,32.012776 30.183517,30.183517 0 0 0 32.208178,1.8292591 Z"
+       id="path4474-5"
+       inkscape:connector-curvature="0" />
     <path
-       style="opacity:1;fill:#f0b80e;fill-opacity:1;stroke:none;stroke-width:0.68715572;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 31.730469 6.7324219 A 25.625 25.625 0 0 0 6.1054688 32.357422 A 25.625 25.625 0 0 0 8.4257812 42.935547 A 25.625 25.625 0 0 1 6.7246094 33.771484 A 25.625 25.625 0 0 1 32.349609 8.1464844 A 25.625 25.625 0 0 1 55.65625 23.193359 A 25.625 25.625 0 0 0 31.730469 6.7324219 z "
-       id="path4474-0-2" />
+       style="opacity:1;fill:#f0b80e;fill-opacity:1;stroke:none;stroke-width:0.71366113;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 32.299458,5.9510943 A 26.613424,26.613424 0 0 0 5.6860345,32.564518 26.613424,26.613424 0 0 0 8.0958475,43.55067 26.613424,26.613424 0 0 1 6.3290571,34.033125 26.613424,26.613424 0 0 1 32.94248,7.4197009 26.613424,26.613424 0 0 1 57.14812,23.046972 26.613424,26.613424 0 0 0 32.299458,5.9510943 Z"
+       id="path4474-0-2"
+       inkscape:connector-curvature="0" />
     <g
        aria-label="$"
        style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#e8c135;fill-opacity:1;stroke:none"
        id="flowRoot4675-6"
-       transform="matrix(2.9502738,0,0,2.9502738,-26.777956,-46.352743)">
+       transform="matrix(3.0640736,0,0,3.0640736,-28.46579,-49.181705)">
       <path
          d="m 20.457667,27.480714 c 0.896,0.128 1.749333,0.789333 1.749333,1.728 0,0.981333 -0.810666,1.664 -1.749333,1.706667 z m -1.493334,-1.856 c -0.682666,-0.234667 -1.194666,-0.810667 -1.194666,-1.514667 0,-0.682667 0.490666,-1.408 1.194666,-1.578667 z m 0,5.290667 c -0.938666,-0.128 -1.450666,-0.896 -1.941333,-1.621334 l -1.173333,0.853334 c 0.682666,1.088 1.792,2.048 3.114666,2.112 v 1.770666 h 1.493334 v -1.770666 c 1.664,-0.02133 3.242667,-1.258667 3.242667,-3.029334 0,-1.898667 -1.514667,-2.944 -3.242667,-3.2 V 22.53138 C 21.012334,22.61671 21.439,22.894047 22.399,23.960714 L 23.444334,23.04338 C 22.719,22.104714 21.673667,21.294047 20.457667,21.18738 v -1.770666 h -1.493334 v 1.770666 c -1.408,0.234667 -2.688,1.365334 -2.688,2.858667 0,1.6 1.216,2.624 2.688,3.008 z"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Orator Std';-inkscape-font-specification:'Orator Std';fill:#e8c135;fill-opacity:1"
@@ -93,7 +95,7 @@
        aria-label="$"
        style="font-style:normal;font-weight:normal;font-size:21.33333397px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffe821;fill-opacity:1;stroke:none"
        id="flowRoot4675"
-       transform="matrix(2.9502738,0,0,2.9502738,-27.153606,-46.595811)">
+       transform="matrix(3.0640736,0,0,3.0640736,-28.85593,-49.434149)">
       <path
          d="m 20.457667,27.480714 c 0.896,0.128 1.749333,0.789333 1.749333,1.728 0,0.981333 -0.810666,1.664 -1.749333,1.706667 z m -1.493334,-1.856 c -0.682666,-0.234667 -1.194666,-0.810667 -1.194666,-1.514667 0,-0.682667 0.490666,-1.408 1.194666,-1.578667 z m 0,5.290667 c -0.938666,-0.128 -1.450666,-0.896 -1.941333,-1.621334 l -1.173333,0.853334 c 0.682666,1.088 1.792,2.048 3.114666,2.112 v 1.770666 h 1.493334 v -1.770666 c 1.664,-0.02133 3.242667,-1.258667 3.242667,-3.029334 0,-1.898667 -1.514667,-2.944 -3.242667,-3.2 V 22.53138 C 21.012334,22.61671 21.439,22.894047 22.399,23.960714 L 23.444334,23.04338 C 22.719,22.104714 21.673667,21.294047 20.457667,21.18738 v -1.770666 h -1.493334 v 1.770666 c -1.408,0.234667 -2.688,1.365334 -2.688,2.858667 0,1.6 1.216,2.624 2.688,3.008 z"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Orator Std';-inkscape-font-specification:'Orator Std';fill:#ffe821;fill-opacity:1"
