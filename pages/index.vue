@@ -18,13 +18,16 @@
                   <div class="character" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
                     <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
                     <div class="character-right">
-                      <div class="char-dps">{{character.dps}}</div>
+                      <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
                       <div class="char-name">{{character.name}}</div>
                       <div class="char-cost">
-                        <a class="buy-char" @click="buyCharacter(character.name)">
+                        <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
                           <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
-                          <div class="char-hire-button" v-if="!character.bought">HIRE</div>
-                          <div class="char-hire-button" v-else>LEVEL UP</div>
+                          <div class="char-hire-button"  >HIRE</div>
+                        </a>
+                        <a class="buy-char" v-else @click="levelCharacter(character.name)">
+                          <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-hire-button">LEVEL UP</div>
                         </a>
                       </div>
                     </div>
@@ -73,7 +76,8 @@ export default {
   mounted() {
     this.changeMonster()
     //start auto DPS..
-    this.dealAutoDamage()
+    var self = this
+    setTimeout(() => self.dealAutoDamage(), 1500)
   },
   computed: {
     availableCharacters: function() { 
@@ -88,43 +92,46 @@ export default {
   data() {
     return {
       dps: 0,
+      isAttackable: true,
       monsterOrder: -1,
       monsterCurrentHP: '',
       monsterMaxHP: '',
       image: '',
       monsterName: '',
-      goldCount: 0,
+      goldCount: 500,
       goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
       gemCount: 0,
       monsterDeath: true,
       gemBonus: 0,
-      level: 1,
-      monsterCount: 1,
+      level: 4,
+      monsterCount: 0,
       monsterMaxCount: 10,
       rebirth: 0,
-      monsters: [
-      {
-        image: 'slug.png',
-        monsterMaxHP: 10,
-        monsterName: 'Fiesty Boop'
-      },{
+      monsters: [{
         image: 'bluebug.svg',
-        monsterMaxHP: 15,
+        monsterMaxHP: 1,
         monsterName: 'Dangerous Boop'
       },{
         image: 'redbug.svg',
-        monsterMaxHP: 25,
+        monsterMaxHP: 1,
         monsterName: 'Cunning Boop'
-      }
-      ],
+      }],
+      bosses: [
+      {
+        image: 'slug.png',
+        monsterMaxHP: 1,
+        monsterName: 'Recently Awoken Boop'
+      }],
       characters: [
       { name: 'Luna',
         fullImg: 'luna.jpg',
         headImg: 'luna-head.jpg',
         dps: 1,
         level: 1,
+        baseDps: 1,
+        baseCost: 10,
         disabled: false,
         bought: false,
         cost: 10 },
@@ -133,47 +140,58 @@ export default {
         headImg: 'suyeon-head.jpg',
         dps: 5,
         level: 1,
+        baseDps: 5,
+        baseCost: 49,
         bought: false,
         disabled: true,
-        cost: 50 },
+        cost: 49 },
       { name: 'Yukki',
         fullImg: 'yukki.jpg',
         headImg: 'yukki-head.jpg',
         dps: 19,
         level: 1,
+        baseDps: 19,
         bought: false,
+        baseCost: 240,
         disabled: true,
-        cost: 100 },
+        cost: 240 },
       { name: 'Mikon',
         fullImg: 'mikon.jpg',
         headImg: 'mikon-head.jpg',
-        dps: 78,
+        dps: 70,
         level: 1,
         bought: false,
+        baseDps: 70,
+        baseCost: 1176,
         disabled: true,
-        cost: 150 },
+        cost: 1176 },
       { name: 'Fate',
         fullImg: 'fate.jpg',
         headImg: 'fate-head.jpg',
-        dps: 310,
+        dps: 257,
         level: 1,
         bought: false,
+        baseDps: 257,
+        baseCost: 5762,
         disabled: true,
-        cost: 218 },
+        cost: 5762 },
       { name: 'Albedo',
         fullImg: 'albedo.jpg',
         headImg: 'albedo-head.jpg',
-        dps: 1119,
+        dps: 941,
         level: 1,
+        baseCost: 28234,
         disabled: true,
+        baseDps: 28334,
         bought: false,
-        cost: 375 },
+        cost: 28234 },
       ]
     }
   },
   methods: {
     attack(e){
-      if(this.monsterCurrentHP > 0)
+
+      if(this.monsterCurrentHP > 0 && this.isAttackable)
       {
         var rect = e.currentTarget.getBoundingClientRect(),
         offsetX = e.clientX - rect.left,
@@ -192,15 +210,14 @@ export default {
         void event.target.offsetWidth;
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
-        this.monsterCurrentHP = this.monsterCurrentHP - 8;
+        this.monsterCurrentHP = this.monsterCurrentHP - 25;
       }
-      if(this.monsterCurrentHP <= 0)
+      if(this.monsterCurrentHP <= 0 && !this.monsterDeath)
       {
+        this.monsterDeath = true;
         this.monsterCurrentHP = 0;
         //kill monster!
         this.killMonster();
-        //start new monster..
-        this.getNewMonster();
       }
     },
     dealAutoDamage(){
@@ -215,10 +232,8 @@ export default {
         self.monsterDeath = true
         self.monsterCurrentHP = 0;
         self.killMonster();
-      }     
-      self.dealAutoDamage()   
-      }, 1000)
-     
+      }  }  ) 
+      setTimeout(() => self.dealAutoDamage(), 1000)
     },
 
     buyCharacter(charName){
@@ -229,29 +244,53 @@ export default {
         this.characters[index].bought = true;
         this.dps = this.dps + this.characters[index].dps
         this.characters[index+1].disabled = false;
-        this.goldBonus = this.goldCount -this.characters[index].cost;
+        this.goldCount = this.goldCount -this.characters[index].cost;
       }
     },
     checkNextLevel(){
-      if(this.monsterCount < this.monsterMaxCount) { this.monsterCount++ }
-      if(this.monsterCount == this.monsterMaxCount) { this.level++; this.monsterCount = 1; }
+      if(this.level % 5 === 0)
+      {
+        this.monsterMaxCount = 1;
+        this.monsterCount = 1;
+        return 
+      }
+      if(this.monsterCount < (this.monsterMaxCount + 1)) { this.monsterCount++; }
+      if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1; }
     },
     killMonster() {
       //add some gold!
-      this.monsterDeath = true
-      this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * Math.floor(((this.goldBonus / 100) + 1)));
+      this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       var self = this
-      self.checkNextLevel()
-      self.changeMonster()
+      setTimeout(() => self.changeMonster(), 1500)
       console.log('monster died!')
     },
     changeMonster() {
       if(this.monsterDeath == true)
       {
-        this.getNewMonster()
+          this.checkNextLevel()
+          this.getNewMonster()      
+      }
+    },
+    levelCharacter(charName){
+      var index = this.characters.findIndex( slot => slot.name == charName)
+      let char = this.characters[index]
+      if(this.goldCount >= char.cost){
+        this.goldCount = this.goldCount - char.cost;
+        char.level++;
+        char.dps = Math.round(char.baseDps * char.level * 1.07)
+        char.cost = Math.round(char.baseCost * (1.07 * char.level))
+        //Lets update our DPS total now.
+        var totalDps = 0
+        this.characters.forEach(slot => {
+          if(slot.bought)
+          {
+            totalDps = totalDps + slot.dps
+          }
+        })
+        this.dps = totalDps
       }
     },
     getNewMonster(){
@@ -261,9 +300,16 @@ export default {
         this.monsterOrder = 0;
       }
       this.monsterName = this.monsters[this.monsterOrder].monsterName
-      this.monsterCurrentHP = this.monsters[this.monsterOrder].monsterMaxHP
-      this.monsterMaxHP = this.monsters[this.monsterOrder].monsterMaxHP
+      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)))
+      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)))
       this.image = this.monsters[this.monsterOrder].image
+      if(this.level % 5 === 0)
+      {
+      this.monsterName = this.bosses[0].monsterName
+      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
+      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
+      this.image = this.bosses[0].image
+      }
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       var imageObj = new Image();
@@ -298,8 +344,8 @@ export default {
        context.drawImage(imageObj, 75, step, imageX, imageY);
        global.requestAnimationFrame(draw)
       }
-      draw() 
-      this.monsterDeath == false
+      draw()
+      this.monsterDeath = false
     },
     getHealthColor(num){
       if(num >= 66 )
@@ -363,6 +409,10 @@ body {
 .game-area {
     width: 1024px;
     height: 640px;
+    width: 1024px;
+    min-width: 1024px;
+    height: 640px;
+    min-height: 640px;
     background: grey;
     position: relative;
     overflow: hidden;
