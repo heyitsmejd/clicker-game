@@ -6,16 +6,16 @@
               <div class="stats-area">
                 <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">{{goldCount}}</div>
                 <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">{{gemCount}}</div>
-                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">12323</div>
-                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">51515</div>
+                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">DPC</div>
+                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">DPS: {{dps}}</div>
               </div>
               <div class="left-panel">
                 <div class="panel-left">
                 <div class="left-tabs"></div>
                 <div class="small-menu"></div>
                 <div class="level-up-buttons"></div>
-                <div class="character-list">
-                  <div class="character" v-for="(character, index) in availableCharacters">
+                <div class="character-list"> 
+                  <div class="character" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
                     <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
                     <div class="character-right">
                       <div class="char-dps">{{character.dps}}</div>
@@ -23,7 +23,8 @@
                       <div class="char-cost">
                         <a class="buy-char" @click="buyCharacter(character.name)">
                           <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
-                          <div class="char-hire-button">HIRE</div>
+                          <div class="char-hire-button" v-if="!character.bought">HIRE</div>
+                          <div class="char-hire-button" v-else>LEVEL UP</div>
                         </a>
                       </div>
                     </div>
@@ -70,18 +71,23 @@ export default {
     Logo
   },
   mounted() {
-    this.getNewMonster()
+    this.changeMonster()
+    //start auto DPS..
+    this.dealAutoDamage()
   },
   computed: {
     availableCharacters: function() { 
-      var bought = this.characters.filter(i => i.bought)
-      var nextChar = this.characters.find((char, index) => char.bought == false)
-      var disabledChar = this.characters.findIndex(i => i.name == nextChar.name)
-      return bought.concat(nextChar, disabledChar).reverse()
+      var character = this.characters;
+      var bought = character.filter(i => i.bought)
+      var nextChar = character.find((char, index) => char.bought == false)
+      var disabledChar = character.findIndex(char => char.name == nextChar.name)
+      var returned = bought.concat(nextChar)
+      return returned.concat(character[disabledChar + 1]).reverse()
     }
   },
   data() {
     return {
+      dps: 0,
       monsterOrder: -1,
       monsterCurrentHP: '',
       monsterMaxHP: '',
@@ -92,6 +98,7 @@ export default {
       vipCount: 0,
       vipBonus: 0,
       gemCount: 0,
+      monsterDeath: true,
       gemBonus: 0,
       level: 1,
       monsterCount: 1,
@@ -118,6 +125,7 @@ export default {
         headImg: 'luna-head.jpg',
         dps: 1,
         level: 1,
+        disabled: false,
         bought: false,
         cost: 10 },
       { name: 'Suyeon',
@@ -126,6 +134,7 @@ export default {
         dps: 5,
         level: 1,
         bought: false,
+        disabled: true,
         cost: 50 },
       { name: 'Yukki',
         fullImg: 'yukki.jpg',
@@ -133,6 +142,7 @@ export default {
         dps: 19,
         level: 1,
         bought: false,
+        disabled: true,
         cost: 100 },
       { name: 'Mikon',
         fullImg: 'mikon.jpg',
@@ -140,6 +150,7 @@ export default {
         dps: 78,
         level: 1,
         bought: false,
+        disabled: true,
         cost: 150 },
       { name: 'Fate',
         fullImg: 'fate.jpg',
@@ -147,12 +158,14 @@ export default {
         dps: 310,
         level: 1,
         bought: false,
+        disabled: true,
         cost: 218 },
       { name: 'Albedo',
         fullImg: 'albedo.jpg',
         headImg: 'albedo-head.jpg',
         dps: 1119,
         level: 1,
+        disabled: true,
         bought: false,
         cost: 375 },
       ]
@@ -190,14 +203,32 @@ export default {
         this.getNewMonster();
       }
     },
+    dealAutoDamage(){
+      var self = this
+      setTimeout(() => {
+      if(self.monsterCurrentHP > 0)
+      {
+        self.monsterCurrentHP = self.monsterCurrentHP - self.dps
+      }
+      if(self.monsterCurrentHP <= 0 && self.monsterDeath == false)
+      {
+        self.monsterDeath = true
+        self.monsterCurrentHP = 0;
+        self.killMonster();
+      }     
+      self.dealAutoDamage()   
+      }, 1000)
+     
+    },
+
     buyCharacter(charName){
-      console.log('trying to buy : ' + charName)
       var index = this.characters.findIndex( slot => slot.name == charName )
-      console.log(index)
       if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
       {
-        console.log(this.availableCharacters)
+        console.log('Bought ' + charName + '!')
         this.characters[index].bought = true;
+        this.dps = this.dps + this.characters[index].dps
+        this.characters[index+1].disabled = false;
         this.goldBonus = this.goldCount -this.characters[index].cost;
       }
     },
@@ -207,15 +238,23 @@ export default {
     },
     killMonster() {
       //add some gold!
+      this.monsterDeath = true
       this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * Math.floor(((this.goldBonus / 100) + 1)));
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
-      this.checkNextLevel()
+      var self = this
+      self.checkNextLevel()
+      self.changeMonster()
       console.log('monster died!')
     },
+    changeMonster() {
+      if(this.monsterDeath == true)
+      {
+        this.getNewMonster()
+      }
+    },
     getNewMonster(){
-
       this.monsterOrder += 1;
       if(this.monsterOrder > this.monsters.length - 1)
       {
@@ -259,7 +298,8 @@ export default {
        context.drawImage(imageObj, 75, step, imageX, imageY);
        global.requestAnimationFrame(draw)
       }
-      draw()
+      draw() 
+      this.monsterDeath == false
     },
     getHealthColor(num){
       if(num >= 66 )
@@ -499,6 +539,7 @@ span.med-btn-text {
     width: 100%;
     background: red;
     border-radius: 4em;
+    transition: width 1s ease;
 }
 .hp-text {
     position: absolute;
