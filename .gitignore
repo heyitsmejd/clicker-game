@@ -79,3 +79,7 @@ dist
 
 # IDE
 .idea
+*.png
+*.zip
+*.svg
+*.vue

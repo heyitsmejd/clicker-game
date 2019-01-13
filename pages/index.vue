@@ -2,29 +2,63 @@
   <section class="container">
     <div class="flex-centered">
       <div class="game-area">
-        <div class="nav-bar">
-          <div class="inventory-panel">
-            <div class="inventory gold-tab">
-              <div class="item-count"><span class="large-btn-text">{{goldCount}}</span></div>
-              <div class="item-bonus"><span class="med-btn-text">+{{goldBonus}}%</span></div>
-            </div>
-            <div class="inventory gems-tab">
-              <div>18</div>
-              <div>+23%</div>
-            </div>
-            <div class="inventory vip-tab">
-              <div>1 Diamond</div>
-              <div>1 Ticket</div>
-            </div>
-          </div>
-        </div>
           <div class="left">
-            <div class="small-menu"></div>
-            <div class="stats-area"></div>
-            <div class="level-up-buttons"></div>
-            <div class="character-list"></div>
-          </div>
-          <div class="right">
+              <div class="stats-area">
+                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">{{goldCount}}</div>
+                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">{{gemCount}}</div>
+                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">12323</div>
+                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">51515</div>
+              </div>
+              <div class="left-panel">
+                <div class="panel-left">
+                <div class="left-tabs"></div>
+                <div class="small-menu"></div>
+                <div class="level-up-buttons"></div>
+                <div class="character-list">
+                  <div class="character">
+                    Box one
+                  </div>
+                  <div class="character">
+                    Box two
+                  </div>
+                  <div class="character">
+                    Box one
+                  </div>
+                  <div class="character">
+                    Box two
+                  </div>
+                  <div class="character">
+                    Box one
+                  </div>
+                  <div class="character">
+                    Box two
+                  </div>
+                  <div class="character">
+                    Box one
+                  </div>
+                  <div class="character">
+                    Box two
+                  </div>
+                  <div class="character">
+                    Box one
+                  </div>
+                  <div class="character">
+                    Box two
+                  </div>
+                </div>
+              </div>
+              <div class="skills"></div>
+              </div>
+            </div>
+            <div class="right">
+            <div class="level-area">
+              <div class="current-level">
+                Level {{level}}
+              </div>
+              <div class="level-monster-count">
+                {{monsterCount}}/{{monsterMaxCount}}
+              </div>
+            </div>
             <div class="click-area" @click="attack($event)">
                 <!-- <canvas id="monster-area" class="monster-bounce" :style="{ 'background-image' : `url('${image}')`, 'width' : '100%', 'height' : '100%'}" ></canvas> -->
                 <canvas id="monster-area" width="460px" height="530px"></canvas>
@@ -38,6 +72,7 @@
               </div>
               <div class="hp-text">{{monsterCurrentHP}}/{{monsterMaxHP}}</div>
             </div>
+          </div>
           </div>
       </div>
     </div>
@@ -69,11 +104,13 @@ export default {
       vipBonus: 0,
       gemCount: 0,
       gemBonus: 0,
-      level: 0,
+      level: 1,
+      monsterCount: 1,
+      monsterMaxCount: 10,
       rebirth: 0,
       monsters: [
       {
-        image: 'bug.svg',
+        image: 'slug.png',
         monsterMaxHP: 10,
         monsterName: 'Fiesty Boop'
       },{
@@ -120,12 +157,17 @@ export default {
         this.getNewMonster();
       }
     },
+    checkNextLevel(){
+      if(this.monsterCount < this.monsterMaxCount) { this.monsterCount++ }
+      if(this.monsterCount == this.monsterMaxCount) { this.level++; this.monsterCount = 1; }
+    },
     killMonster() {
       //add some gold!
       this.goldCount = this.goldCount + ((this.monsterMaxHP / 5) * Math.floor(((this.goldBonus / 100) + 1)));
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
+      this.checkNextLevel()
       console.log('monster died!')
     },
     getNewMonster(){
@@ -145,10 +187,10 @@ export default {
       imageObj.src = this.image;
       var imgX = 75;
       var imageX = 300;
-      var imageY = 400;
-      var step = 1;
-      var stepMin = 0
-      var stepMax = 25
+      var imageY = 300;
+      var step = 170;
+      var stepMin = 155
+      var stepMax = 195
       var canvas_size_x = 460;
       var canvas_size_y = 530;
       var reverse = false;
@@ -205,13 +247,13 @@ body {
 }
 .monster-status {
     z-index: 10;
-       -moz-user-select: none;
-   -khtml-user-select: none;
-   -webkit-user-select: none;
-       width: 80%;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    width: 40%;
     position: absolute;
     bottom: 5%;
-    right: 10%;
+    right: 5%;
 }
 .monster-hp-bar {
     background: #4c3f3f;
@@ -240,6 +282,10 @@ body {
     position: relative;
     overflow: hidden;
     background-image: URL('game-bg.svg');
+    display: flex;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
 }
 .nav-bar {
     height: 4em;
@@ -264,6 +310,17 @@ body {
     width: 10em;
     align-items: center;
     height: 76px;
+}
+.inventory.gems-tab:before {
+    content: ' ';
+    background-image: url(/gem.svg);
+    position: absolute;
+    left: -2em;
+    bottom: -3px;
+    height: 82px;
+    width: 82px;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 .inventory.gold-tab:before {
     content: ' ';
@@ -298,7 +355,7 @@ span.med-btn-text {
     width: 100%;
     height: 50%;
     display: flex;
-    background: #90bba9;
+    background-image: linear-gradient(to right,#358269, #2bab81, #358269);
     border-top-right-radius: 1em;
     padding-left: 1.5em;
     color: white;
@@ -309,8 +366,9 @@ span.med-btn-text {
     width: 100%;
     height: 50%;
     display: flex;
-    background: #647f96;
+        background: linear-gradient(to right,#353e82, #356682, #353e82);
     border-bottom-right-radius: 1em;
+    border-bottom-left-radius: 1em;
     padding-left: 1.5em;
     color: white;
     justify-content: center;
@@ -330,27 +388,25 @@ span.med-btn-text {
     height: 76px;
 }
 .left {
-    position: absolute;
-    left: 0;
-    width: 480px;
-    height: 530px;
-    bottom: 0;
+    width: 50%;
+    height: 100%;
+}
+.left-panel {
+    height: 100%;
+    background: #383232;
 }
 .right {
-    position: absolute;
-    width: 460px;
-    height: 530px;
-    right: 0;
-    bottom: 0;
+    width: 50%;
+    height: 100%;
 }
 .click-area {
     position: absolute;
     justify-content: center;
     display: flex;
-    height: 100%;
-    width: 100%;
+    height: 80%;
+    bottom: 10%;
+    width: 50%;
     z-index: 5;
-
 }
 .hit-area {
     position: absolute;
@@ -403,5 +459,61 @@ span.med-btn-text {
     color: white;
     bottom: 25%;
     right: 45%;
+}
+.stats-area {
+    display: flex;
+    padding: 0.5em;
+    flex-wrap: wrap;
+}
+.stat-tab {
+    display: flex;
+    width: 48%;
+    height: 2em;
+    margin: 1%;
+    font-family: dosis;
+    font-weight: bold;
+    font-size: 1.8em;
+    color: white;
+    text-shadow: 2px 2px black;
+    line-height: 2;
+}
+.left-tabs {
+    background: red;
+    height: 3em;
+}
+.small-menu {
+  height: 5em;
+  background: orange;
+}
+.level-up-buttons {
+    height: 3em;
+    background: blue;
+}
+.skills {
+    width: 4em;
+    height: 100%;
+    background: pink;
+}
+.panel-left {
+    height: 489px;
+    width: calc(100% - 4em);
+    background: darkgrey;
+}
+.character-list {
+    display: flex;
+    flex-wrap: wrap;
+    overflow-y: scroll;
+}
+.level-area {
+    margin-top: 20%;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    font-family: dosis;
+    font-weight: bold;
+    font-size: 1.8em;
+    color: white;
+    text-shadow: 2px 2px black;
 }
 </style>
