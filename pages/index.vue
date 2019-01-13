@@ -15,35 +15,18 @@
                 <div class="small-menu"></div>
                 <div class="level-up-buttons"></div>
                 <div class="character-list">
-                  <div class="character">
-                    Box one
-                  </div>
-                  <div class="character">
-                    Box two
-                  </div>
-                  <div class="character">
-                    Box one
-                  </div>
-                  <div class="character">
-                    Box two
-                  </div>
-                  <div class="character">
-                    Box one
-                  </div>
-                  <div class="character">
-                    Box two
-                  </div>
-                  <div class="character">
-                    Box one
-                  </div>
-                  <div class="character">
-                    Box two
-                  </div>
-                  <div class="character">
-                    Box one
-                  </div>
-                  <div class="character">
-                    Box two
+                  <div class="character" v-for="(character, index) in availableCharacters">
+                    <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
+                    <div class="character-right">
+                      <div class="char-dps">{{character.dps}}</div>
+                      <div class="char-name">{{character.name}}</div>
+                      <div class="char-cost">
+                        <a class="buy-char" @click="buyCharacter(character.name)">
+                          <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-hire-button">HIRE</div>
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -90,6 +73,12 @@ export default {
     this.getNewMonster()
   },
   computed: {
+    availableCharacters: function() { 
+      var bought = this.characters.filter(i => i.bought)
+      var nextChar = this.characters.find((char, index) => char.bought == false)
+      var disabledChar = this.characters.findIndex(i => i.name == nextChar.name)
+      return bought.concat(nextChar, disabledChar).reverse()
+    }
   },
   data() {
     return {
@@ -122,6 +111,50 @@ export default {
         monsterMaxHP: 25,
         monsterName: 'Cunning Boop'
       }
+      ],
+      characters: [
+      { name: 'Luna',
+        fullImg: 'luna.jpg',
+        headImg: 'luna-head.jpg',
+        dps: 1,
+        level: 1,
+        bought: false,
+        cost: 10 },
+      { name: 'Suyeon',
+        fullImg: 'suyeon.jpg',
+        headImg: 'suyeon-head.jpg',
+        dps: 5,
+        level: 1,
+        bought: false,
+        cost: 50 },
+      { name: 'Yukki',
+        fullImg: 'yukki.jpg',
+        headImg: 'yukki-head.jpg',
+        dps: 19,
+        level: 1,
+        bought: false,
+        cost: 100 },
+      { name: 'Mikon',
+        fullImg: 'mikon.jpg',
+        headImg: 'mikon-head.jpg',
+        dps: 78,
+        level: 1,
+        bought: false,
+        cost: 150 },
+      { name: 'Fate',
+        fullImg: 'fate.jpg',
+        headImg: 'fate-head.jpg',
+        dps: 310,
+        level: 1,
+        bought: false,
+        cost: 218 },
+      { name: 'Albedo',
+        fullImg: 'albedo.jpg',
+        headImg: 'albedo-head.jpg',
+        dps: 1119,
+        level: 1,
+        bought: false,
+        cost: 375 },
       ]
     }
   },
@@ -155,6 +188,17 @@ export default {
         this.killMonster();
         //start new monster..
         this.getNewMonster();
+      }
+    },
+    buyCharacter(charName){
+      console.log('trying to buy : ' + charName)
+      var index = this.characters.findIndex( slot => slot.name == charName )
+      console.log(index)
+      if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
+      {
+        console.log(this.availableCharacters)
+        this.characters[index].bought = true;
+        this.goldBonus = this.goldCount -this.characters[index].cost;
       }
     },
     checkNextLevel(){
@@ -275,13 +319,15 @@ body {
     font-size: 1.5em;
     left: 1em;
 }
+
 .game-area {
     width: 1024px;
     height: 640px;
     background: grey;
     position: relative;
     overflow: hidden;
-    background-image: URL('game-bg.svg');
+    background-image: URL('testbg2.jpg');
+    background-size: cover;
     display: flex;
     -moz-user-select: none;
     -khtml-user-select: none;
@@ -478,16 +524,16 @@ span.med-btn-text {
     line-height: 2;
 }
 .left-tabs {
-    background: red;
+    background: #383232;
     height: 3em;
 }
 .small-menu {
   height: 5em;
-  background: orange;
+  background: #403b3b;
 }
 .level-up-buttons {
     height: 3em;
-    background: blue;
+    background: #383232;
 }
 .skills {
     width: 4em;
@@ -499,10 +545,131 @@ span.med-btn-text {
     width: calc(100% - 4em);
     background: darkgrey;
 }
+
+::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  background-color: #2b2626;
+}
+
+::-webkit-scrollbar
+{
+  width: 10px;
+  background-color: #2b2626;
+}
+
+::-webkit-scrollbar-thumb
+{
+  background-color: #0ae;
+  
+  background-image: -webkit-gradient(linear, 0 0, 0 100%,
+                     color-stop(.5, rgba(255, 255, 255, .2)),
+             color-stop(.5, transparent), to(transparent));
+}
+.character {
+    box-shadow: inset -2px -2px 0 2px #232121;
+    display: flex;
+    width: 48%;
+    height: 116px;
+    margin: 1%;
+    border-radius: 8px;
+    background: #3e3c3c;
+}
+.character-right {
+    display: flex;
+    width: calc(100% - 5em);
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    position: relative;
+}
+.char-dps {
+    align-self: center;
+    display: flex;
+    background: #363e4e;
+    padding: 0.3em;
+    width: 100%;
+    justify-content: center;
+    border-top-right-radius: 8px;
+    margin-right: 8px;
+}
+.char-name {
+    height: 30px;
+    width: 100%;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+.char-cost {
+    align-self: center;
+    display: flex;
+    padding: 0.3em;
+    width: 100%;
+    background: none;
+    justify-content: center;
+    border-bottom-right-radius: 8px;
+    margin-right: 8px;
+}
+.char-cost-amount {
+    top: 2px;
+    width: 90px;
+    position: absolute;
+    background: #232121;
+    border-radius: 6px;
+    left: 2px;
+    font-size: 0.9em;
+    text-align: center;
+    padding-top: 0;
+    line-height: 1.2;
+}
 .character-list {
     display: flex;
     flex-wrap: wrap;
     overflow-y: scroll;
+    background: #383232;
+    height: 313px;
+    align-content: flex-start;
+    justify-content: flex-end;
+}
+.disabled {
+    filter: grayscale(100%);
+    pointer-events: none;
+}
+.char-hire-button {
+    position: absolute;
+    bottom: -2px;
+    width: 100%;
+    text-align: center;
+}
+.char-portrait {
+    border-bottom-left-radius: 6px;
+    z-index: 2;
+    width: 80px;
+    height: 112px;
+    background-size: cover;
+    background-position: center;
+    border-top-left-radius: 6px;
+    box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35);
+}
+.buy-char {
+    margin-bottom: 4px;
+    height: 2.5em;
+    position: relative;
+    display: flex;
+    width: 80%;
+    background: #2E9CCA;
+    border-radius: 6px;
+    color: white;
+}
+img.buy-icon {
+    height: 1.9em;
+    position: absolute;
+    left: 5%;
+    top: -5px;
+}
+.buy-char:hover {
+  background: #4cb5e0;
+  color: white;
 }
 .level-area {
     margin-top: 20%;
