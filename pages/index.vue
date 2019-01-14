@@ -13,19 +13,22 @@
                 <div class="panel-left">
                 <div class="left-tabs"></div>
                 <div class="small-menu"></div>
-                <div class="level-up-buttons"></div>
+                
                 <div class="character-list"> 
-                  <div class="character" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
+                  <div class="char-slot-bg" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
+                    <div class="character" v-if="character.name != null">
                     <div class="character-left">
                       <div class="char-cost">
                         <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
+                          <div class="button-overlay"></div>
                           <div class="char-cost-amount">
                           <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
                           <div class="char-hire-button"  >HIRE</div>
                           </div>
                         </a>
                         <a class="buy-char" v-else @click="levelCharacter(character.name)">
-                          <div class="char-cost-amount">
+                          <div class="button-overlay pink-overlay"></div>
+                          <div class="char-cost-amount pink">
                           <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
                           <div class="char-hire-button">LEVEL UP</div>
                         </div>
@@ -33,10 +36,15 @@
                       </div>
                     </div>
                     <div class="char-info">
-                      <div class="char-name">{{character.name}}</div>
-                      <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
+                      <div class="char-stats">
+                        <div class="char-name">{{character.name}}</div>
+                        <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
+                      </div>
+                      <div class="char-img">
+                          <div class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></div>                        
+                      </div>
                     </div>
-                    <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -89,10 +97,32 @@ export default {
     availableCharacters: function() { 
       var character = this.characters;
       var bought = character.filter(i => i.bought)
+      if(bought.length == character.length)
+      {
+        return bought.reverse()
+      }
       var nextChar = character.find((char, index) => char.bought == false)
-      var disabledChar = character.findIndex(char => char.name == nextChar.name)
+      //var disabledChar = character.findIndex(char => char.name == nextChar.name)
       var returned = bought.concat(nextChar)
-      return returned.concat(character[disabledChar + 1]).reverse()
+      return returned.reverse()
+      // if(disabledChar != null)
+      // {
+      //   if(bought.length == 0)
+      //   {
+      //     return returned.concat(character[disabledChar + 1],character[disabledChar + 2]).reverse()
+      //   }
+      //   if(bought.length == character.length)
+      //   {
+      //     return returned.reverse()
+      //   }
+      //   else{
+      //     return returned.concat(character[disabledChar + 1]).reverse()
+      //   }
+        
+      // }
+      // else {
+      //   return returned.reverse()
+      // }
     }
   },
   data() {
@@ -104,7 +134,7 @@ export default {
       monsterMaxHP: '',
       image: '',
       monsterName: '',
-      goldCount: 500,
+      goldCount: 500000,
       goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
@@ -243,7 +273,9 @@ export default {
     },
 
     buyCharacter(charName){
+
       var index = this.characters.findIndex( slot => slot.name == charName )
+      console.log(this.characters.length, index+2)
       if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
       {
         console.log('Bought ' + charName + '!')
@@ -534,8 +566,9 @@ span.med-btn-text {
     height: 100%;
 }
 .left-panel {
-    height: 100%;
-    background: #383232;
+  display: flex;
+    height: 75%;
+    background: #434c6a;
 }
 .right {
     width: 50%;
@@ -604,6 +637,7 @@ span.med-btn-text {
     right: 45%;
 }
 .stats-area {
+    height: 25%;
     display: flex;
     padding: 0.5em;
     flex-wrap: wrap;
@@ -621,56 +655,70 @@ span.med-btn-text {
     line-height: 2;
 }
 .left-tabs {
-    background: #383232;
+    background: linear-gradient(#434c6a,#343b50);
     height: 3em;
+    border-top: solid 2px #2a3044;
 }
 .small-menu {
-  height: 5em;
-  background: #403b3b;
+    border-top: solid 2px #2a3044;
+    height: 5em;
+    background: linear-gradient(#434c6a,#343b50);
 }
 .level-up-buttons {
+    border-top: solid 2px #2a3044;
     height: 3em;
-    background: #383232;
+    background: linear-gradient(#434c6a,#343b50);
 }
 .skills {
     width: 4em;
     height: 100%;
-    background: pink;
+    background: #434c6a;
+    box-shadow: inset 0 0 0 2px #2a3044;
+    padding: 0.5em;
+}
+.button-overlay {
+    top: 10%;
+    left: 8%;
+    content: " ";
+    width: 85%;
+    height: 80%;
+    position: absolute;
+    background: linear-gradient(#00ffff57,#10ff003d);
+    border-radius: 1em;
+    z-index: 1;
 }
 .panel-left {
-    height: 489px;
+    height: 100%;
     width: calc(100% - 4em);
-    background: darkgrey;
 }
 
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-  background-color: #2b2626;
+  background-color: #191e2f;
 }
 
 ::-webkit-scrollbar
 {
   width: 10px;
-  background-color: #2b2626;
+  background-color: red;
+  border-radius: 50%;
 }
 
 ::-webkit-scrollbar-thumb
 {
-  background-color: #0ae;
-  
-  background-image: -webkit-gradient(linear, 0 0, 0 100%,
+  background-color: #52608e;
+  border-radius: 4px;
+/*  background-image: -webkit-gradient(linear, 0 0, 0 100%,
                      color-stop(.5, rgba(255, 255, 255, .2)),
-             color-stop(.5, transparent), to(transparent));
+             color-stop(.5, transparent), to(transparent));*/
 }
 .character {
-    box-shadow: inset -2px -2px 0 2px #232121;
     display: flex;
-    width: 98%;
-    height: 116px;
-    margin: 1%;
+    width: 100%;
+    height: 115px;
     border-radius: 8px;
-    background: #3e3c3c;
+    position: relative;
 }
 .character-left {
     display: flex;
@@ -683,9 +731,14 @@ span.med-btn-text {
 .char-dps {
     justify-content: flex-end;
     display: flex;
-    padding-right: 1em;
     width: 100%;
     color: lightgray;
+}
+.pink {
+    background: linear-gradient(rgb(241, 8, 255),rgb(171, 22, 247)) !important;
+}
+.pink-overlay {
+    background: linear-gradient(rgba(255, 118, 244, 0.34118),rgba(0, 203, 224, 0.23922));
 }
 .char-name {
     width: 100%;
@@ -693,7 +746,6 @@ span.med-btn-text {
     display: flex;
     justify-content: flex-end;
     padding-top: 0.5em;
-    padding-right: 0.5em;
     font-size: 1.5em;
     color: white;
 }
@@ -707,63 +759,106 @@ span.med-btn-text {
     background: none;
     justify-content: center;
 }
+.char-slot-bg {
+    display: flex;
+    width: 100%;
+    height: 117.4px;
+    position: relative;
+    background: radial-gradient(#dcd0d05e, #0c0c0c47);
+    border: solid 2px #00000029;
+}
+/*.panel-bg {
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    position: absolute;
+    background: linear-gradient(#5ac2ff, #30468e);
+    border: solid 2px black;
+    width: 110%;
+    height: 110%;
+}*/
 .char-cost-amount {
+    box-shadow: inset 0px 0px 20px 3px #000000;
     width: 100%;
     height: 100%;
     display: flex;
     border-radius: 1em;
-    background: #232121;
+    background: linear-gradient(#5ac2ff, #30468e);
     font-size: 1em;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+}
+.char-img {
+    width: 6.5em;
+    height: 100%;
+    padding: 1em;
+    padding-right: 1.25em;
+    padding-bottom: 1.25em;
 }
 .char-amount-gold {
     display: flex;
     width: 100%;
     justify-content: center;
     line-height: 3;
+    margin-bottom: -0.8em;
+    z-index: 2;
 }
 .character-list {
     display: flex;
     flex-wrap: wrap;
     overflow-y: scroll;
-    background: #383232;
-    height: 313px;
+    background: #303852;
+    height: 352px;
     align-content: flex-start;
-    justify-content: flex-end;
+    justify-content: center;
+    box-shadow: inset 0 0 20px 20px #00000030;
 }
 .disabled {
     filter: grayscale(100%);
     pointer-events: none;
+}
+.character:before {
+    position: absolute;
+    left: 2%;
+    top: 6%;
+    content: " ";
+    background: linear-gradient(#546290,#3d4a77);
+    box-shadow: 4px 4px 20px 0px #0000004a;
+    border-radius: 6px;
+    width: 95.5%;
+    height: 85%;
 }
 .char-hire-button {
     width: 100%;
     display: flex;
     justify-content: center;
     font-size: 1.2em;
+    z-index: 2;
 }
 .char-portrait {
-    border-bottom-left-radius: 6px;
-    z-index: 2;
-    width: 20%;
-    height: 112px;
+    width: 100%;
+    height: 100%;
     background-size: cover;
     background-position: center;
-    border-top-left-radius: 6px;
-    box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35);
+    border-radius: 6px;
+    box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35), 0px 0px 0px 2px rgba(0, 0, 0, 0.35);
 }
 .char-info {
-    width: 40%;
+    width: 60%;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
 }
 .buy-char {
     padding: 0.25em;
+    box-shadow: inset 0 0 0px 1px #2b2d31;
     margin-bottom: 4px;
     height: 100%;
     position: relative;
     display: flex;
     width: 100%;
-    background: #2E9CCA;
+    background: #303852;
     border-radius: 1em;
     color: white;
 }
@@ -771,8 +866,9 @@ img.buy-icon {
     height: 3em;
 }
 .buy-char:hover {
-  background: #4cb5e0;
   color: white;
+  box-shadow: inset 0 0 0px 5px #155182;
+  z-index: 10;
 }
 .level-area {
     margin-top: 20%;
