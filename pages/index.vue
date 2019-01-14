@@ -16,21 +16,27 @@
                 <div class="level-up-buttons"></div>
                 <div class="character-list"> 
                   <div class="character" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
-                    <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
-                    <div class="character-right">
-                      <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
-                      <div class="char-name">{{character.name}}</div>
+                    <div class="character-left">
                       <div class="char-cost">
                         <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
-                          <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-cost-amount">
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
                           <div class="char-hire-button"  >HIRE</div>
+                          </div>
                         </a>
                         <a class="buy-char" v-else @click="levelCharacter(character.name)">
-                          <div class="char-cost-amount"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-cost-amount">
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
                           <div class="char-hire-button">LEVEL UP</div>
+                        </div>
                         </a>
                       </div>
                     </div>
+                    <div class="char-info">
+                      <div class="char-name">{{character.name}}</div>
+                      <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
+                    </div>
+                    <a class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></a>
                   </div>
                 </div>
               </div>
@@ -660,58 +666,63 @@ span.med-btn-text {
 .character {
     box-shadow: inset -2px -2px 0 2px #232121;
     display: flex;
-    width: 48%;
+    width: 98%;
     height: 116px;
     margin: 1%;
     border-radius: 8px;
     background: #3e3c3c;
 }
-.character-right {
+.character-left {
     display: flex;
-    width: calc(100% - 5em);
+    width: 40%;
     align-items: center;
     flex-direction: column;
     color: white;
     position: relative;
 }
 .char-dps {
-    align-self: center;
+    justify-content: flex-end;
     display: flex;
-    background: #363e4e;
-    padding: 0.3em;
+    padding-right: 1em;
     width: 100%;
-    justify-content: center;
-    border-top-right-radius: 8px;
-    margin-right: 8px;
+    color: lightgray;
 }
 .char-name {
-    height: 30px;
     width: 100%;
     align-items: center;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
+    padding-top: 0.5em;
+    padding-right: 0.5em;
+    font-size: 1.5em;
+    color: white;
 }
 .char-cost {
-    align-self: center;
+    padding: 1em;
+    align-items: center;
+    align-self: flex-start;
     display: flex;
-    padding: 0.3em;
     width: 100%;
+    height: 100%;
     background: none;
     justify-content: center;
-    border-bottom-right-radius: 8px;
-    margin-right: 8px;
 }
 .char-cost-amount {
-    top: 2px;
-    width: 90px;
-    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    border-radius: 1em;
     background: #232121;
-    border-radius: 6px;
-    left: 2px;
-    font-size: 0.9em;
-    text-align: center;
-    padding-top: 0;
-    line-height: 1.2;
+    font-size: 1em;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.char-amount-gold {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    line-height: 3;
 }
 .character-list {
     display: flex;
@@ -727,36 +738,37 @@ span.med-btn-text {
     pointer-events: none;
 }
 .char-hire-button {
-    position: absolute;
-    bottom: -2px;
     width: 100%;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    font-size: 1.2em;
 }
 .char-portrait {
     border-bottom-left-radius: 6px;
     z-index: 2;
-    width: 80px;
+    width: 20%;
     height: 112px;
     background-size: cover;
     background-position: center;
     border-top-left-radius: 6px;
     box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35);
 }
+.char-info {
+    width: 40%;
+}
 .buy-char {
+    padding: 0.25em;
     margin-bottom: 4px;
-    height: 2.5em;
+    height: 100%;
     position: relative;
     display: flex;
-    width: 80%;
+    width: 100%;
     background: #2E9CCA;
-    border-radius: 6px;
+    border-radius: 1em;
     color: white;
 }
 img.buy-icon {
-    height: 1.9em;
-    position: absolute;
-    left: 5%;
-    top: -5px;
+    height: 3em;
 }
 .buy-char:hover {
   background: #4cb5e0;
