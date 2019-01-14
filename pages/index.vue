@@ -67,7 +67,7 @@
               <div class="current-level">
                 Level {{level}}
               </div>
-              <div class="level-monster-count">
+              <div class="level-monster-count" v-if="!isBossLevel">
                 {{monsterCount}}/{{monsterMaxCount}}
               </div>
             </div>
@@ -143,6 +143,8 @@ export default {
     return {
       dps: 0,
       levelRate: 1,
+      isBossLevel: false,
+      bossKilled: false,
       isAttackable: true,
       monsterOrder: -1,
       monsterCurrentHP: '',
@@ -276,10 +278,14 @@ export default {
       setTimeout(() => {
       if(self.monsterCurrentHP > 0)
       {
-        self.monsterCurrentHP = self.monsterCurrentHP - self.dps
+        if(this.isAttackable)
+        {
+          self.monsterCurrentHP = self.monsterCurrentHP - self.dps
+        }
       }
       if(self.monsterCurrentHP <= 0 && self.monsterDeath == false)
       {
+        this.isAttackable = false;
         self.monsterDeath = true
         self.monsterCurrentHP = 0;
         self.killMonster();
@@ -301,14 +307,14 @@ export default {
       }
     },
     checkNextLevel(){
-      if(this.level % 5 === 0)
-      {
-        this.monsterMaxCount = 1;
-        this.monsterCount = 1;
-        return 
-      }
       if(this.monsterCount < (this.monsterMaxCount + 1)) { this.monsterCount++; }
       if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1; }
+      if(this.bossKilled)
+      {
+        this.bossKilled = false;
+        this.monsterCount = 1;
+        this.level++
+      }
     },
     killMonster() {
       //add some gold!
@@ -317,7 +323,17 @@ export default {
       var context = canvas.getContext('2d');
       context.clearRect(0, 0, canvas.width, canvas.height);
       var self = this
-      setTimeout(() => self.changeMonster(), 1500)
+      if(this.isBossLevel)
+      {
+        this.isBossLevel = false;
+        this.bossKilled = true;
+        setTimeout(() => self.changeMonster(), 1500)
+
+      }
+      else {
+        setTimeout(() => self.changeMonster(), 1500)
+      }
+      
       console.log('monster died!')
     },
     formatNumber(num){
@@ -457,10 +473,12 @@ export default {
       this.image = this.monsters[this.monsterOrder].image
       if(this.level % 5 === 0)
       {
-      this.monsterName = this.bosses[0].monsterName
-      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
-      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
-      this.image = this.bosses[0].image
+        this.isBossLevel = true;
+        this.bossKilled = false;
+        this.monsterName = this.bosses[0].monsterName
+        this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
+        this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
+        this.image = this.bosses[0].image
       }
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
@@ -498,6 +516,7 @@ export default {
       }
       draw()
       this.monsterDeath = false
+      setTimeout(() => { this.isAttackable = true} , 1000)
     },
     getHealthColor(num){
       if(num >= 66 )
