@@ -3,17 +3,29 @@
     <div class="flex-centered">
       <div class="game-area">
           <div class="left">
-              <div class="stats-area">
-                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">{{goldCount}}</div>
-                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">{{gemCount}}</div>
-                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">DPC</div>
-                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">DPS: {{dps}}</div>
-              </div>
               <div class="left-panel">
-                <div class="panel-left">
-                <div class="left-tabs"></div>
-                <div class="small-menu"></div>
-                
+                <div class="stats-area">
+                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">{{formatNumber(goldCount)}}</div>
+                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">{{formatNumber(gemCount)}}</div>
+                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">DPC</div>
+                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">DPS: {{formatNumber(dps)}}</div>
+              </div>
+                <div class="left-panel-content">
+                <div class="left-big-menu"></div>
+                <div class="left-small-menu">
+                    <a class="level-option-button level-rate-btn" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
+                      1x
+                    </a>
+                    <a  class="level-option-button level-rate-btn" @click="setLevelRate(10)" :class="{ 'is-active-option' : currentLevelRate == 10 }">
+                      10x
+                    </a>
+                    <a class="level-option-button level-rate-btn" @click="setLevelRate(25)" :class="{ 'is-active-option' : currentLevelRate == 25 }">
+                      25x
+                    </a>
+                    <a class="level-option-button level-rate-btn" @click="setLevelRate(100)" :class="{ 'is-active-option' : currentLevelRate == 100 }">
+                      100x
+                    </a>
+                </div>     
                 <div class="character-list"> 
                   <div class="char-slot-bg" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
                     <div class="character" v-if="character.name != null">
@@ -22,14 +34,14 @@
                         <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
                           <div class="button-overlay"></div>
                           <div class="char-cost-amount">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{formatNumber(character.cost)}}</div>
                           <div class="char-hire-button"  >HIRE</div>
                           </div>
                         </a>
                         <a class="buy-char" v-else @click="levelCharacter(character.name)">
                           <div class="button-overlay pink-overlay"></div>
                           <div class="char-cost-amount pink">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{character.cost}}</div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{formatNumber(getLevelCost(character.name))}}</div>
                           <div class="char-hire-button">LEVEL UP</div>
                         </div>
                         </a>
@@ -38,7 +50,7 @@
                     <div class="char-info">
                       <div class="char-stats">
                         <div class="char-name">{{character.name}}</div>
-                        <div class="char-dps">DPS: {{character.dps}}  LVL: {{character.level}}</div>
+                        <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
                       </div>
                       <div class="char-img">
                           <div class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></div>                        
@@ -48,7 +60,6 @@
                   </div>
                 </div>
               </div>
-              <div class="skills"></div>
               </div>
             </div>
             <div class="right">
@@ -123,18 +134,22 @@ export default {
       // else {
       //   return returned.reverse()
       // }
+    },
+    currentLevelRate: function(){
+      return this.levelRate
     }
   },
   data() {
     return {
       dps: 0,
+      levelRate: 1,
       isAttackable: true,
       monsterOrder: -1,
       monsterCurrentHP: '',
       monsterMaxHP: '',
       image: '',
       monsterName: '',
-      goldCount: 500000,
+      goldCount: 500000000000000000000000000,
       goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
@@ -305,6 +320,75 @@ export default {
       setTimeout(() => self.changeMonster(), 1500)
       console.log('monster died!')
     },
+    formatNumber(num){
+       if (num >= 1000000000000000000000000000000000000000000000000000000000000000000) {
+          return 'A lot';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '*';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '&';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '^';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '%';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '$';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '#';
+       }
+       if (num >= 1000000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '@';
+       }
+       if (num >= 1000000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + '!';
+       }
+       if (num >= 1000000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'D';
+       }
+       if (num >= 1000000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'U';
+       }
+       if (num >= 1000000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'd';
+       }
+       if (num >= 1000000000000000000000000000000) {
+          return (num / 1000000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'N';
+       }
+       if (num >= 1000000000000000000000000000) {
+          return (num / 1000000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'O';
+       }
+       if (num >= 1000000000000000000000000) {
+          return (num / 1000000000000000000000000).toFixed(1).replace(/\.0$/, '') + 'S';
+       }
+       if (num >= 1000000000000000000000) {
+          return (num / 1000000000000000000000).toFixed(1).replace(/\.0$/, '') + 's';
+       }
+       if (num >= 1000000000000000000) {
+          return (num / 1000000000000000000).toFixed(1).replace(/\.0$/, '') + 'Q';
+       }
+       if (num >= 1000000000000000) {
+          return (num / 1000000000000000).toFixed(1).replace(/\.0$/, '') + 'q';
+       }
+       if (num >= 1000000000000) {
+          return (num / 1000000000000).toFixed(1).replace(/\.0$/, '') + 'T';
+       }
+       if (num >= 1000000000) {
+          return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+       }
+       if (num >= 1000000) {
+          return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+       }
+       if (num >= 1000) {
+          return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+       }
+       return num;
+    },
     changeMonster() {
       if(this.monsterDeath == true)
       {
@@ -312,24 +396,54 @@ export default {
           this.getNewMonster()      
       }
     },
+    setLevelRate(amt){
+      this.levelRate = amt
+    },
+    getLevelCost(charName){
+      var index = this.characters.findIndex( slot => slot.name == charName)
+      let char = this.characters[index]
+      let totalLevelCost = 0;
+      let startingLevel = char.level;
+      let endLevel = char.level + this.levelRate;
+      for (let i = startingLevel; i < endLevel; i++)
+      {
+          if(i > 25)
+          {
+            totalLevelCost = totalLevelCost + Math.round(char.baseCost * (Math.pow(1.07525,i)))
+          } else {
+              totalLevelCost = totalLevelCost + Math.round(char.baseCost * (Math.pow(1.06975,i)))
+          }
+      }
+      return totalLevelCost
+    },
+    calcExtraDps(charName){
+      var index = this.characters.findIndex( slot => slot.name == charName)
+      let char = this.characters[index]
+      let totalDps = char.baseDps * char.level;
+      console.log(`${charName}'s new dps is ${totalDps}`)
+      char.dps = totalDps;
+    },
     levelCharacter(charName){
       var index = this.characters.findIndex( slot => slot.name == charName)
       let char = this.characters[index]
-      if(this.goldCount >= char.cost){
-        this.goldCount = this.goldCount - char.cost;
-        char.level++;
-        char.dps = Math.round(char.baseDps * char.level * 1.07)
-        char.cost = Math.round(char.baseCost * (1.07 * char.level))
-        //Lets update our DPS total now.
-        var totalDps = 0
-        this.characters.forEach(slot => {
-          if(slot.bought)
-          {
-            totalDps = totalDps + slot.dps
-          }
-        })
-        this.dps = totalDps
-      }
+      let totalLevelCost = this.getLevelCost(charName);
+      let endLevel = char.level + this.levelRate;
+        if(this.goldCount >= totalLevelCost)
+        {
+          this.goldCount = this.goldCount - totalLevelCost
+          char.level = endLevel;
+          this.calcExtraDps(charName)
+          char.cost = Math.round(char.baseCost * (1.07 * char.level))
+          //Lets update our DPS total now.
+          var totalDps = 0
+          this.characters.forEach(slot => {
+            if(slot.bought)
+            {
+              totalDps = totalDps + slot.dps
+            }
+          })
+          this.dps = totalDps
+        }
     },
     getNewMonster(){
       this.monsterOrder += 1;
@@ -566,9 +680,10 @@ span.med-btn-text {
     height: 100%;
 }
 .left-panel {
-  display: flex;
-    height: 75%;
+    display: flex;
+    height: 100%;
     background: #434c6a;
+    flex-direction: column;
 }
 .right {
     width: 50%;
@@ -638,8 +753,9 @@ span.med-btn-text {
 }
 .stats-area {
     height: 25%;
-    display: flex;
+    width: 100%;
     padding: 0.5em;
+    display: flex;
     flex-wrap: wrap;
 }
 .stat-tab {
@@ -654,12 +770,44 @@ span.med-btn-text {
     text-shadow: 2px 2px black;
     line-height: 2;
 }
-.left-tabs {
+.left-small-menu {
     background: linear-gradient(#434c6a,#343b50);
     height: 3em;
     border-top: solid 2px #2a3044;
+    display: flex;
+    padding: 0.5em;
 }
-.small-menu {
+.level-option-button:before {
+    content: ' ';
+    background: linear-gradient(#ffffff0f,transparent);
+    width: 90%;
+    height: 70%;
+    position: absolute;
+    border-radius: 6px;
+}
+.level-option-button {
+    color: grey;
+    font-weight: bold;
+    align-items: center;
+    background: #24262f;
+    margin-right: 1em;
+    width: 25%;
+    display: flex;
+    border-radius: 8px;
+    justify-content: center;
+    align-content: center;
+    position: relative;
+}
+.level-option-button:hover {
+  color: #5ac2ff;
+}
+.is-active-option {
+  color: #5ac2ff;
+}
+.level-option-button:last-child {
+    margin-right: 0 !important;
+}
+.left-big-menu {
     border-top: solid 2px #2a3044;
     height: 5em;
     background: linear-gradient(#434c6a,#343b50);
@@ -687,9 +835,9 @@ span.med-btn-text {
     border-radius: 1em;
     z-index: 1;
 }
-.panel-left {
-    height: 100%;
-    width: calc(100% - 4em);
+.left-panel-content {
+    height: 75%;
+    width: 100%;
 }
 
 ::-webkit-scrollbar-track
