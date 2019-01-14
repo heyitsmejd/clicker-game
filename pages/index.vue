@@ -73,7 +73,7 @@
             </div>
             <div class="click-area" @click="attack($event)">
                 <!-- <canvas id="monster-area" class="monster-bounce" :style="{ 'background-image' : `url('${image}')`, 'width' : '100%', 'height' : '100%'}" ></canvas> -->
-                <canvas id="monster-area" width="460px" height="530px"></canvas>
+                <canvas id="monster-area" class="new-monster" width="460px" height="530px"></canvas>
               <div class="hit-area" id="hit-area"></div>
             </div>
             <div class="monster-status">
@@ -82,7 +82,7 @@
               <div class="health" :style="{'width' : `${((monsterCurrentHP/monsterMaxHP) * 100)}%`,
               'background' : `${getHealthColor(((monsterCurrentHP/monsterMaxHP) * 100))}`}"></div>
               </div>
-              <div class="hp-text">{{monsterCurrentHP}}/{{monsterMaxHP}}</div>
+              <div class="hp-text">{{formatNumber(monsterCurrentHP)}}/{{formatNumber(monsterMaxHP)}}</div>
             </div>
           </div>
           </div>
@@ -317,6 +317,8 @@ export default {
       }
     },
     killMonster() {
+      document.getElementById('monster-area').classList.remove('new-monster')
+      document.getElementById('monster-area').classList.add('kill-monster')
       //add some gold!
       this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
       var canvas = document.getElementById('monster-area');
@@ -516,6 +518,8 @@ export default {
       }
       draw()
       this.monsterDeath = false
+      document.getElementById('monster-area').classList.remove('kill-monster')
+      document.getElementById('monster-area').classList.add('new-monster')
       setTimeout(() => { this.isAttackable = true} , 1000)
     },
     getHealthColor(num){
@@ -788,6 +792,31 @@ span.med-btn-text {
     color: white;
     text-shadow: 2px 2px black;
     line-height: 2;
+}
+.kill-monster {
+     -webkit-transition: opacity 1s ease-in-out;
+    -moz-transition: opacity 1s ease-in-out;
+    -ms-transition: opacity 1s ease-in-out;
+    -o-transition: opacity 1s ease-in-out;
+    opacity: 0;
+    width: 80%;
+    height: 80%; 
+}
+.new-monster {
+/*     -webkit-transition: opacity 2s ease-in;
+    -moz-transition: opacity 2s ease-in;
+    -o-transition: opacity 2s ease-in;
+    -ms-transition: opacity 2s ease-in;
+    transition: opacity 2s ease-in;*/
+    opacity: 1;
+    width: 100%;
+    height: 100%;
+    animation: slide-in 1s normal forwards ease-in;
+    position: absolute;
+}
+@keyframes slide-in {
+  from {  right: -500px; }
+  to { right: 0 }
 }
 .left-small-menu {
     background: linear-gradient(#434c6a,#343b50);
