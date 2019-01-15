@@ -5,13 +5,46 @@
           <div class="left">
               <div class="left-panel">
                 <div class="stats-area">
-                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">{{formatNumber(goldCount)}}</div>
-                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">{{formatNumber(gemCount)}}</div>
-                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">DPC</div>
-                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">DPS: {{formatNumber(dps)}}</div>
+                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">
+                  {{formatNumber(goldCount)}}
+                </div>
+                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">
+                  {{ formatNumber(gemCount)}}
+                </div>
+                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">
+                 DPC: {{formatNumber(dpc)}}
+                </div>
+                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">
+                  DPS: {{formatNumber(dps)}}
+                </div>
               </div>
                 <div class="left-panel-content">
-                <div class="left-big-menu"></div>
+                <div class="left-big-menu">
+                  <div class="menu-option">
+                    <div class="menu-option-content">
+                      <img class="menu-icon" src="/icons/sword.png">
+                      <div>Heroes</div>
+                    </div>
+                  </div>
+                  <div class="menu-option">
+                   <div class="menu-option-content">
+                      <img class="menu-icon" src="/icons/shop.svg">
+                      <div>Shop</div>
+                    </div>
+                  </div>
+                  <div class="menu-option">
+                    <div class="menu-option-content">
+                      <img class="menu-icon" src="/icons/achievement.svg">
+                      <div>Achievements</div>
+                    </div>
+                  </div>
+                  <div class="menu-option">
+                   <div class="menu-option-content">
+                      <img class="menu-icon" src="/icons/stats.svg">
+                      <div>Stats</div>
+                    </div>
+                  </div>
+                </div>
                 <div class="left-small-menu">
                     <a class="level-option-button level-rate-btn" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
                       1x
@@ -498,7 +531,6 @@ export default {
     updateDmgPos(){
       var self = this
           setTimeout(() => {
-            console.log('bang')
             self.recentHits.forEach(hit => {
               hit.x = hit.x + 2;
               if(hit.y > hit.maxY && !hit.maxYHit)
@@ -859,9 +891,8 @@ span.med-btn-text {
         z-index: 99;
 }
 .stats-area {
-    height: 25%;
+    height: 250%;
     width: 100%;
-    padding: 0.5em;
     display: flex;
     flex-wrap: wrap;
 }
@@ -940,10 +971,15 @@ canvas#hit-numbers {
 .level-option-button:last-child {
     margin-right: 0 !important;
 }
+.test {
+  width: 100%;
+  height: 100%;
+}
 .left-big-menu {
     border-top: solid 2px #2a3044;
-    height: 5em;
+    height: 7em;
     background: linear-gradient(#434c6a,#343b50);
+    display: flex;
 }
 .level-up-buttons {
     border-top: solid 2px #2a3044;
@@ -969,7 +1005,7 @@ canvas#hit-numbers {
     z-index: 1;
 }
 .left-panel-content {
-    height: 75%;
+    height: 80%;
     width: 100%;
 }
 
@@ -1149,6 +1185,41 @@ canvas#hit-numbers {
     z-index: 2;
     display: flex;
     justify-content: flex-end;
+}
+.menu-option-content {
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    width: 100%;
+}
+.menu-icon {
+  height: 2em;
+  width: 2em;
+}
+.menu-option {
+    display: flex;
+    width: 25%;
+    margin: 0.5em;
+    border-radius: 8px;
+    background: linear-gradient(#7685b7, #5a68a7);
+    margin-left: 0;
+    position: relative;
+}
+.menu-option:before {
+    content: ' ';
+    position: absolute;
+    width: 95%;
+    top: 2.5%;
+    left: 2.5%;
+    height: 95%;
+    border-radius: 8px;
+    background: linear-gradient(#9eade0, #66719c);
+}
+.menu-option:first-child {
+  margin-left: 0.5em;
 }
 .buy-char {
     padding: 0.25em;
