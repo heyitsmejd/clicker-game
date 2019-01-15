@@ -34,14 +34,14 @@
                         <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
                           <div class="button-overlay"></div>
                           <div class="char-cost-amount">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{formatNumber(character.cost)}}</div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
                           <div class="char-hire-button"  >HIRE</div>
                           </div>
                         </a>
                         <a class="buy-char" v-else @click="levelCharacter(character.name)">
                           <div class="button-overlay pink-overlay"></div>
                           <div class="char-cost-amount pink">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png">{{formatNumber(getLevelCost(character.name))}}</div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
                           <div class="char-hire-button">LEVEL UP</div>
                         </div>
                         </a>
@@ -63,6 +63,9 @@
               </div>
             </div>
             <div class="right">
+            <div class="level-select">
+              
+            </div>
             <div class="level-area">
               <div class="current-level">
                 Level {{level}}
@@ -72,17 +75,16 @@
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
-                <!-- <canvas id="monster-area" class="monster-bounce" :style="{ 'background-image' : `url('${image}')`, 'width' : '100%', 'height' : '100%'}" ></canvas> -->
                 <canvas id="monster-area" class="new-monster" width="460px" height="530px"></canvas>
               <div class="hit-area" id="hit-area"></div>
             </div>
             <div class="monster-status">
               <div class="monster-name">{{monsterName}}</div>
+              <div class="hp-text">{{formatNumber(monsterCurrentHP)}}/{{formatNumber(monsterMaxHP)}}</div>
               <div class="monster-hp-bar">
               <div class="health" :style="{'width' : `${((monsterCurrentHP/monsterMaxHP) * 100)}%`,
               'background' : `${getHealthColor(((monsterCurrentHP/monsterMaxHP) * 100))}`}"></div>
               </div>
-              <div class="hp-text">{{formatNumber(monsterCurrentHP)}}/{{formatNumber(monsterMaxHP)}}</div>
             </div>
           </div>
           </div>
@@ -173,7 +175,7 @@ export default {
       }],
       bosses: [
       {
-        image: 'slug.png',
+        image: 'slug.svg',
         monsterMaxHP: 1,
         monsterName: 'Recently Awoken Boop'
       }],
@@ -264,6 +266,10 @@ export default {
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
         this.monsterCurrentHP = this.monsterCurrentHP - 25;
+        var canvas = document.getElementById('monster-area');
+        var context = canvas.getContext('2d');
+        context.font = "30px Arial";
+        context.fillText("25", 10, 50);
       }
       if(this.monsterCurrentHP <= 0 && !this.monsterDeath)
       {
@@ -486,12 +492,12 @@ export default {
       var context = canvas.getContext('2d');
       var imageObj = new Image();
       imageObj.src = this.image;
-      var imgX = 75;
-      var imageX = 300;
+      var imgX = 265;
+      var imageX = 200;
       var imageY = 300;
-      var step = 170;
-      var stepMin = 155
-      var stepMax = 195
+      var step = 115;
+      var stepMin = 95
+      var stepMax = 135
       var canvas_size_x = 460;
       var canvas_size_y = 530;
       var reverse = false;
@@ -513,7 +519,7 @@ export default {
             }
 
           }
-       context.drawImage(imageObj, 75, step, imageX, imageY);
+       context.drawImage(imageObj, 125, step, imageX, imageY);
        global.requestAnimationFrame(draw)
       }
       draw()
@@ -525,14 +531,14 @@ export default {
     getHealthColor(num){
       if(num >= 66 )
       {
-        return 'green'
+        return '#2fd764'
       }
       if(num >= 33 && num < 66)
       {
-        return 'orange'
+        return '#d7cb2f'
       }
       if(num >= 0 && num < 33){
-        return 'red'
+        return '#d72f5c'
       }
     }
   }
@@ -545,24 +551,31 @@ body {
   background: black;
   min-height: 100vh;
   width: 100%;
+  font-family: dosis;
 }
 .flex-centered {
   display: flex;
   justify-content: center;
 }
 .monster-status {
+    align-items: flex-end;
     z-index: 10;
     -moz-user-select: none;
     -khtml-user-select: none;
     -webkit-user-select: none;
-    width: 40%;
-    position: absolute;
-    bottom: 5%;
-    right: 5%;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    height: 20%;
+    margin-top: 50%;
 }
 .monster-hp-bar {
+    width: 40%;
+    z-index: 99;
     background: #4c3f3f;
-    height: 3em;
+    height: 2em;
     border-radius: 4em;
     box-shadow: 0px 0px 0 3px black;
     overflow: hidden;
@@ -574,13 +587,13 @@ body {
    user-select: none;
 }
 .monster-name {
+    font-family: dosis;
     color: white;
-    position: absolute;
-    top: -40px;
-    font-size: 1.5em;
+    font-size: 2em;
     left: 1em;
+    z-index: 99;
+    text-shadow: 2px 2px black;
 }
-
 .game-area {
     width: 1024px;
     height: 640px;
@@ -744,35 +757,21 @@ span.med-btn-text {
   50% {opacity: 0.5;  background-size: 35%}
   100% {opacity: 0;  background-size: 100%;}
 }
-.monster {
-    width: 300px;
-    height: 400px;
-    right: 80px;
-    top: 5%;
-}
-.monster-bounce {
-    background-size: cover;
-    background-position: center;
-    animation: bounce infinite;
-    animation-duration: 0.5s;
-}
-@keyframes bounce {
-  0% { background-size: 100%;}
-  50% {background-size: 95%}
-  100% { background-size: 100%;}
-}
+
 .health {
     height: 100%;
     width: 100%;
     background: red;
     border-radius: 4em;
     transition: width 1s ease;
+    position: relative;
 }
 .hp-text {
-    position: absolute;
+    width: 100%;
     color: white;
-    bottom: 25%;
-    right: 45%;
+    justify-content: center;
+    display: flex;
+        z-index: 99;
 }
 .stats-area {
     height: 25%;
@@ -798,9 +797,7 @@ span.med-btn-text {
     -moz-transition: opacity 1s ease-in-out;
     -ms-transition: opacity 1s ease-in-out;
     -o-transition: opacity 1s ease-in-out;
-    opacity: 0;
-    width: 80%;
-    height: 80%; 
+    opacity: 0; 
 }
 .new-monster {
 /*     -webkit-transition: opacity 2s ease-in;
@@ -809,14 +806,11 @@ span.med-btn-text {
     -ms-transition: opacity 2s ease-in;
     transition: opacity 2s ease-in;*/
     opacity: 1;
-    width: 100%;
-    height: 100%;
     animation: slide-in 1s normal forwards ease-in;
-    position: absolute;
 }
 @keyframes slide-in {
-  from {  right: -500px; }
-  to { right: 0 }
+  from {  margin-right: -500px; }
+  to { margin-right: 0 }
 }
 .left-small-menu {
     background: linear-gradient(#434c6a,#343b50);
@@ -945,6 +939,10 @@ span.med-btn-text {
     font-size: 1.5em;
     color: white;
 }
+.level-select {
+  display: flex;
+  height: 15%;
+}
 .char-cost {
     padding: 1em;
     align-items: center;
@@ -1014,6 +1012,21 @@ span.med-btn-text {
     filter: grayscale(100%);
     pointer-events: none;
 }
+.purchase-amt-text {
+    display: inline-block;
+    font-size: 1.5em;
+    padding-bottom: 0;
+    line-height: 2em;
+}
+.health:before {
+    position: absolute;
+    content: " ";
+    background: linear-gradient(rgba(222, 215, 215, 0.05),rgba(14, 14, 14, 0.13));
+    box-shadow: 4px 4px 20px 0px rgba(0,0,0,0.2902);
+    border-radius: 1em;
+    width: 100%;
+    height: 100%;
+}
 .character:before {
     position: absolute;
     left: 2%;
@@ -1067,11 +1080,12 @@ img.buy-icon {
   z-index: 10;
 }
 .level-area {
-    margin-top: 20%;
+    height: 15%;
     display: flex;
     width: 100%;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     font-family: dosis;
     font-weight: bold;
     font-size: 1.8em;
