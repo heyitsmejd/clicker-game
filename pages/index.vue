@@ -75,7 +75,8 @@
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
-                <canvas id="monster-area" class="new-monster" width="460px" height="530px"></canvas>
+                <canvas id="hit-numbers" class="canvas" width="512px" height="640px"></canvas>
+                <canvas id="monster-area" class="canvas new-monster" width="512px" height="640px"></canvas>
               <div class="hit-area" id="hit-area"></div>
             </div>
             <div class="monster-status">
@@ -105,6 +106,7 @@ export default {
     //start auto DPS..
     var self = this
     setTimeout(() => self.dealAutoDamage(), 1500)
+    this.updateDmgPos()
   },
   computed: {
     availableCharacters: function() { 
@@ -144,6 +146,7 @@ export default {
   data() {
     return {
       dps: 0,
+      dpc: 1,
       levelRate: 1,
       isBossLevel: false,
       bossKilled: false,
@@ -160,10 +163,27 @@ export default {
       gemCount: 0,
       monsterDeath: true,
       gemBonus: 0,
-      level: 4,
+      level: 1,
       monsterCount: 0,
       monsterMaxCount: 10,
       rebirth: 0,
+      recentHits: [],
+      maps: [{
+        name: 'Verdant Plains',
+        levelMin: 1,
+        levelMax: 5,
+        image: 'testbg2.jpg'
+      },{
+        name: 'Shoddy Village',
+        levelMin: 6,
+        levelMax: 10,
+         image: 'level2.jpg'
+      },{
+        name: 'Gloomy Hills',
+        levelMin: 11,
+        levelMax: 15,
+         image: 'testbg.jpg'
+      },],
       monsters: [{
         image: 'bluebug.svg',
         monsterMaxHP: 1,
@@ -265,11 +285,14 @@ export default {
         void event.target.offsetWidth;
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
-        this.monsterCurrentHP = this.monsterCurrentHP - 25;
-        var canvas = document.getElementById('monster-area');
-        var context = canvas.getContext('2d');
-        context.font = "30px Arial";
-        context.fillText("25", 10, 50);
+        this.monsterCurrentHP = this.monsterCurrentHP - this.dpc;
+        var self = this
+        this.recentHits.push({"x": offsetX, "y": offsetY, "amount": this.dpc, "maxY" : offsetY - 60,
+        'maxYHit' : false})
+        // setTimeout(() => {
+        //     self.recentHits.shift()
+        // }, 750)
+        this.showDamageNumbers();
       }
       if(this.monsterCurrentHP <= 0 && !this.monsterDeath)
       {
@@ -312,7 +335,7 @@ export default {
         this.goldCount = this.goldCount -this.characters[index].cost;
       }
     },
-    checkNextLevel(){
+    checkNextLevel(){;
       if(this.monsterCount < (this.monsterMaxCount + 1)) { this.monsterCount++; }
       if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1; }
       if(this.bossKilled)
@@ -320,16 +343,19 @@ export default {
         this.bossKilled = false;
         this.monsterCount = 1;
         this.level++
+      var levelBg = this.maps.find(i => {
+        return i.levelMin <= this.level && i.levelMax >= this.level
+      })
+      console.log(levelBg)
+      document.getElementsByClassName('game-area')[0].style.backgroundImage = `url('${levelBg.image}')`
       }
     },
     killMonster() {
+      setTimeout(() => this.recentHits = [], 750)
       document.getElementById('monster-area').classList.remove('new-monster')
       document.getElementById('monster-area').classList.add('kill-monster')
       //add some gold!
       this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
-      var canvas = document.getElementById('monster-area');
-      var context = canvas.getContext('2d');
-      context.clearRect(0, 0, canvas.width, canvas.height);
       var self = this
       if(this.isBossLevel)
       {
@@ -469,6 +495,51 @@ export default {
           this.dps = totalDps
         }
     },
+    updateDmgPos(){
+      var self = this
+          setTimeout(() => {
+            console.log('bang')
+            self.recentHits.forEach(hit => {
+              hit.x = hit.x + 2;
+              if(hit.y > hit.maxY && !hit.maxYHit)
+              {
+                 hit.y = hit.y + 2;
+              }
+              if(hit.y < hit.maxY)
+              {
+                hit.maxYHit = true
+                hit.y = hit.y - 2;
+              }
+              if(hit.maxYHit)
+              {
+                hit.y = hit.y - 2;
+              }
+              
+            })   
+            self.updateDmgPos()       
+          }, 10)
+    },
+    showDamageNumbers(){
+        var self = this;
+        function draw() {
+        var canvas = document.getElementById('hit-numbers');
+        var context = canvas.getContext('2d');
+        var canvas_size_x = 512;
+        var canvas_size_y = 640;
+        var reverse = false;
+        context.font = "30px Arial";
+        context.shadowOffsetX = 1;
+        context.shadowOffsetY = 1;
+        context.shadowColor = "rgba(0,0,0,0.8)";
+        context.fillStyle = `rgba(255,255,255,1)`;       
+        context.clearRect(0, 0, canvas_size_x, canvas_size_y);
+        self.recentHits.forEach(hit => {
+          context.fillText(hit.amount, hit.x, hit.y);
+        })
+        global.requestAnimationFrame(draw)
+        }
+        draw()
+    },
     getNewMonster(){
       this.monsterOrder += 1;
       if(this.monsterOrder > this.monsters.length - 1)
@@ -476,8 +547,8 @@ export default {
         this.monsterOrder = 0;
       }
       this.monsterName = this.monsters[this.monsterOrder].monsterName
-      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)))
-      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)))
+      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.025, this.level)))
+      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.025, this.level)))
       this.image = this.monsters[this.monsterOrder].image
       if(this.level % 5 === 0)
       {
@@ -488,39 +559,44 @@ export default {
         this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
         this.image = this.bosses[0].image
       }
-      var canvas = document.getElementById('monster-area');
-      var context = canvas.getContext('2d');
-      var imageObj = new Image();
-      imageObj.src = this.image;
+      var self = this
       var imgX = 265;
       var imageX = 200;
       var imageY = 300;
-      var step = 115;
-      var stepMin = 95
-      var stepMax = 135
-      var canvas_size_x = 460;
-      var canvas_size_y = 530;
+      var step = 165;
+      var stepMin = 155
+      var stepMax = 175
+      var canvas_size_x = 512;
+      var canvas_size_y = 640;
       var reverse = false;
-
-        function draw() {
-          context.clearRect(0, 0, canvas_size_x, canvas_size_y);
-          if(!reverse){
+      function draw() {
+            if(!reverse){
             step = step + 1;
              if(step >= stepMax)
             {
               reverse = true;
             }
-          }
-          if(reverse == true) {
+      }
+      if(reverse == true) {
              step = step - 1; 
              if(step <= stepMin)
             {
               reverse = false;
             }
 
-          }
-       context.drawImage(imageObj, 125, step, imageX, imageY);
-       global.requestAnimationFrame(draw)
+      }
+      var canvas = document.getElementById('monster-area');
+      var context = canvas.getContext('2d');
+      var imageObj = new Image();
+      imageObj.src = self.image;
+      context.font = "30px Arial";
+      context.shadowOffsetX = 1;
+      context.shadowOffsetY = 1;
+      context.shadowColor = "rgba(0,0,0,0.8)";
+      context.fillStyle = `rgba(255,255,255,1)`;       
+      context.clearRect(0, 0, canvas_size_x, canvas_size_y);
+        context.drawImage(imageObj, 150, step, imageX, imageY);
+        global.requestAnimationFrame(draw)
       }
       draw()
       this.monsterDeath = false
@@ -714,6 +790,11 @@ span.med-btn-text {
 .left {
     width: 50%;
     height: 100%;
+    z-index: 55;
+}
+.canvas {
+  width: 100%;
+  height: 100%;
 }
 .left-panel {
     display: flex;
@@ -724,21 +805,25 @@ span.med-btn-text {
 .right {
     width: 50%;
     height: 100%;
+    position: relative;
 }
 .click-area {
     position: absolute;
     justify-content: center;
     display: flex;
-    height: 80%;
-    bottom: 10%;
-    width: 50%;
+    height: 100%;
+    width: 100%;
     z-index: 5;
+    bottom: 0;
 }
 .hit-area {
+  z-index: 3;
+      -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
     position: absolute;
     opacity: 0;
     animation-iteration-count: 1;
-    z-index: 6;
     width: 100px;
     height: 100px;
     background-repeat: no-repeat;
@@ -798,6 +883,11 @@ span.med-btn-text {
     -ms-transition: opacity 1s ease-in-out;
     -o-transition: opacity 1s ease-in-out;
     opacity: 0; 
+    z-index: 1;
+}
+canvas#hit-numbers {
+    position: absolute;
+    z-index: 2;
 }
 .new-monster {
 /*     -webkit-transition: opacity 2s ease-in;
@@ -805,13 +895,14 @@ span.med-btn-text {
     -o-transition: opacity 2s ease-in;
     -ms-transition: opacity 2s ease-in;
     transition: opacity 2s ease-in;*/
+    z-index: 1;
     opacity: 1;
     animation: slide-in 1s normal forwards ease-in;
 }
-@keyframes slide-in {
+/*@keyframes slide-in {
   from {  margin-right: -500px; }
   to { margin-right: 0 }
-}
+}*/
 .left-small-menu {
     background: linear-gradient(#434c6a,#343b50);
     height: 3em;
@@ -1080,6 +1171,7 @@ img.buy-icon {
   z-index: 10;
 }
 .level-area {
+    z-index: 99;
     height: 15%;
     display: flex;
     width: 100%;
