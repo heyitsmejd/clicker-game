@@ -2,19 +2,32 @@
   <section class="container">
     <div class="flex-centered">
       <div class="game-area">
+        <div class="game-modal" v-if="viewModal">
+          <div class="game-modal-bg" @click="viewModal = !viewModal"></div>
+          <div class="game-modal-content">
+            <div class="game-modal-header">
+              <div class="game-modal-text">Congratulations! Achievement Earned!</div>
+              <div class="game-modal-close" @click="viewModal = !viewModal">X</div>
+            </div>
+            <div class="modal-pop-content">
+              <div>You just clicked 200 times!</div>
+              <div>Reward: <span class="bonus">+1% DPS!</span></div>
+            </div>
+          </div>
+        </div>
           <div class="left">
               <div class="left-panel">
                 <div class="stats-area">
-                <div class="gold-stat stat-tab"><img class="stat-icon" src="/icons/coin.png">
+                <div class="gold-stat stat-tab"><img class="stat-icon" src="icons/coin.png">
                   {{formatNumber(goldCount)}}
                 </div>
-                <div class="gem-stat stat-tab"><img class="stat-icon" src="/icons/gem.png">
+                <div class="gem-stat stat-tab"><img class="stat-icon" src="icons/gem.png">
                   {{ formatNumber(gemCount)}}
                 </div>
-                <div class="click-stat stat-tab"><img class="stat-icon" src="/icons/dagger.png">
+                <div class="click-stat stat-tab"><img class="stat-icon" src="icons/dagger.png">
                  DPC: {{formatNumber(dpc)}}
                 </div>
-                <div class="dps-stat stat-tab"><img class="stat-icon" src="/icons/wand.png">
+                <div class="dps-stat stat-tab"><img class="stat-icon" src="icons/wand.png">
                   DPS: {{formatNumber(dps)}}
                 </div>
               </div>
@@ -22,25 +35,25 @@
                 <div class="left-big-menu">
                   <div class="menu-option">
                     <div class="menu-option-content">
-                      <img class="menu-icon" src="/icons/sword.png">
+                      <img class="menu-icon" src="icons/sword.png">
                       <div>Heroes</div>
                     </div>
                   </div>
                   <div class="menu-option">
                    <div class="menu-option-content">
-                      <img class="menu-icon" src="/icons/shop.svg">
+                      <img class="menu-icon" src="icons/shop.svg">
                       <div>Shop</div>
                     </div>
                   </div>
                   <div class="menu-option">
                     <div class="menu-option-content">
-                      <img class="menu-icon" src="/icons/achievement.svg">
+                      <img class="menu-icon" src="icons/achievement.svg">
                       <div>Achievements</div>
                     </div>
                   </div>
                   <div class="menu-option">
                    <div class="menu-option-content">
-                      <img class="menu-icon" src="/icons/stats.svg">
+                      <img class="menu-icon" src="icons/stats.svg">
                       <div>Stats</div>
                     </div>
                   </div>
@@ -67,14 +80,14 @@
                         <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
                           <div class="button-overlay"></div>
                           <div class="char-cost-amount">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
                           <div class="char-hire-button"  >HIRE</div>
                           </div>
                         </a>
                         <a class="buy-char" v-else @click="levelCharacter(character.name)">
                           <div class="button-overlay pink-overlay"></div>
                           <div class="char-cost-amount pink">
-                          <div class="char-amount-gold"><img class="buy-icon" src="/icons/coin.png"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
+                          <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
                           <div class="char-hire-button">LEVEL UP</div>
                         </div>
                         </a>
@@ -86,7 +99,7 @@
                         <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
                       </div>
                       <div class="char-img">
-                          <div class="char-portrait" :style="{'background-image' : `url('/heroes/${character.headImg}')`}"></div>                        
+                          <div class="char-portrait" :style="{'background-image' : `url('heroes/${character.headImg}')`}"></div>                        
                       </div>
                     </div>
                     </div>
@@ -108,9 +121,10 @@
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
-                <canvas id="hit-numbers" class="canvas" width="512px" height="640px"></canvas>
+               <!--  <canvas id="hit-numbers" class="canvas" width="512px" height="640px"></canvas> -->
                 <canvas id="monster-area" class="canvas new-monster" width="512px" height="640px"></canvas>
               <div class="hit-area" id="hit-area"></div>
+              <div id="hit-numbers"></div>
             </div>
             <div class="monster-status">
               <div class="monster-name">{{monsterName}}</div>
@@ -140,6 +154,7 @@ export default {
     var self = this
     setTimeout(() => self.dealAutoDamage(), 1500)
     this.updateDmgPos()
+    this.checkAchievements()
   },
   computed: {
     availableCharacters: function() { 
@@ -178,6 +193,24 @@ export default {
   },
   data() {
     return {
+      viewModal: false,
+      modalHeader: '',
+      modalContent: '',
+      modalReward: '',
+      achievements: [{
+        name: 'Beginner Clicker',
+        reward: 0.01,
+        rewardType: 'dps',
+        text: `You've clicked 5 times!`,
+        requirement: 5,
+        requireType: 'click',
+        icon: 'icons/sword.png',
+        earned: false,
+        seen: false
+      }],
+      dpsBonus: '',
+      dpcBonus: '',
+      clickCount: 0,
       dps: 0,
       dpc: 1,
       levelRate: 1,
@@ -196,7 +229,7 @@ export default {
       gemCount: 0,
       monsterDeath: true,
       gemBonus: 0,
-      level: 1,
+      level: 4,
       monsterCount: 0,
       monsterMaxCount: 10,
       rebirth: 0,
@@ -301,6 +334,7 @@ export default {
 
       if(this.monsterCurrentHP > 0 && this.isAttackable)
       {
+        this.clickCount++;
         var rect = e.currentTarget.getBoundingClientRect(),
         offsetX = e.clientX - rect.left,
         offsetY = e.clientY - rect.top;
@@ -322,10 +356,15 @@ export default {
         var self = this
         this.recentHits.push({"x": offsetX, "y": offsetY, "amount": this.dpc, "maxY" : offsetY - 60,
         'maxYHit' : false})
-        // setTimeout(() => {
-        //     self.recentHits.shift()
-        // }, 750)
-        this.showDamageNumbers();
+        this.showDamageNumbers(offsetX, offsetY, this.dpc);
+        setTimeout(() => {
+          if(document.getElementsByClassName('hit-number-text').length > 0){
+            for(let i = document.getElementsByClassName('hit-number-text').length; i > 0; i--)
+            {
+              document.getElementsByClassName('hit-number-text')[0].remove()
+            }
+          }
+        },2000)
       }
       if(this.monsterCurrentHP <= 0 && !this.monsterDeath)
       {
@@ -334,6 +373,27 @@ export default {
         //kill monster!
         this.killMonster();
       }
+    },
+    checkAchievements(){
+      console.log('checking achievements...')
+      var self = this
+      setTimeout(() => {
+      self.achievements.forEach(ach => {
+        if(ach.requireType == "click" && ach.requirement <= self.clickCount && !ach.earned && !ach.seen)
+        {
+          self.modalContent = ach.text
+          self.modalHeader = ach.name 
+          if(ach.rewardType == "dps"){
+            self.modalReward = "+" + ach.reward + '% DPS!'
+            self.dpsBonus = self.dpsBonus + 0.01;
+          }
+          ach.seen = true
+          ach.earned = true
+          self.viewModal = true;
+        }
+      })
+      this.checkAchievements()
+      }, 2500)
     },
     dealAutoDamage(){
       var self = this
@@ -529,48 +589,64 @@ export default {
         }
     },
     updateDmgPos(){
+
+      if(this.recentHits.length > 10)
+      {
+        for(let i = this.recentHits.length; i > 10; i--)
+        {
+          this.recentHits.shift()
+        }
+      }
       var self = this
           setTimeout(() => {
             self.recentHits.forEach(hit => {
-              hit.x = hit.x + 2;
+              hit.x = hit.x + 5;
               if(hit.y > hit.maxY && !hit.maxYHit)
               {
-                 hit.y = hit.y + 2;
+                 hit.y = hit.y + 5;
               }
               if(hit.y < hit.maxY)
               {
                 hit.maxYHit = true
-                hit.y = hit.y - 2;
+                hit.y = hit.y - 4;
               }
               if(hit.maxYHit)
               {
-                hit.y = hit.y - 2;
+                hit.y = hit.y - 4;
               }
               
             })   
             self.updateDmgPos()       
-          }, 10)
+          }, 1000/120)
     },
-    showDamageNumbers(){
-        var self = this;
-        function draw() {
-        var canvas = document.getElementById('hit-numbers');
-        var context = canvas.getContext('2d');
-        var canvas_size_x = 512;
-        var canvas_size_y = 640;
-        var reverse = false;
-        context.font = "30px Arial";
-        context.shadowOffsetX = 1;
-        context.shadowOffsetY = 1;
-        context.shadowColor = "rgba(0,0,0,0.8)";
-        context.fillStyle = `rgba(255,255,255,1)`;       
-        context.clearRect(0, 0, canvas_size_x, canvas_size_y);
-        self.recentHits.forEach(hit => {
-          context.fillText(hit.amount, hit.x, hit.y);
-        })
-        global.requestAnimationFrame(draw)
+    showDamageNumbers(offsetX, offsetY, amount){
+        // var self = this;
+        // var canvas_size_x = 512;
+        // var canvas_size_y = 640;
+        // var canvas = document.getElementById('hit-numbers');
+        // var context = canvas.getContext('2d');
+        // var reverse = false;
+        // context.font = "30px Arial";
+        // context.fillStyle = `rgba(255,255,255,1)`; 
+        // function draw() {      
+        // context.clearRect(0, 0, canvas_size_x, canvas_size_y);
+        // self.recentHits.forEach(hit => {
+        //   context.fillText(hit.amount, hit.x, hit.y);
+        // })
+        // global.requestAnimationFrame(draw)
+        // }
+        // draw()
+        if(offsetX < 0 || offsetY < 0)
+        {
+          return
         }
-        draw()
+          var node = document.createElement("div")
+          var textnode = document.createTextNode(amount); 
+          node.setAttribute('class','hit-number-text');
+          node.style.left = `${offsetX}px`;
+          node.style.top = `${offsetY}px`;
+          node.appendChild(textnode); 
+          document.getElementById("hit-numbers").appendChild(node);    
     },
     getNewMonster(){
       this.monsterOrder += 1;
@@ -664,6 +740,46 @@ body {
 .flex-centered {
   display: flex;
   justify-content: center;
+}
+.game-modal-content {
+    width: 40%;
+    z-index: 300;
+}
+.modal-pop-content {
+    display: flex;
+    background: #4e5671;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 1em;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    color: #e2e0e0;
+}
+.game-modal-header {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background: #5a627f;
+    color: gold;
+    padding: 1em;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.game-modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.game-modal-bg {
+    background: #0000006b;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 200;
 }
 .monster-status {
     align-items: flex-end;
@@ -986,6 +1102,46 @@ canvas#hit-numbers {
     height: 3em;
     background: linear-gradient(#434c6a,#343b50);
 }
+#hit-numbers {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.hit-number-text {
+  z-index: 88;
+    font-family: dosis;
+    font-size: 3em;
+    color: white;
+    position: absolute;
+    opacity: 0;
+    -webkit-animation: move-text 2s;
+    animation: move-text 2s;
+    background: -webkit-linear-gradient(#ecad76, #ff4b4b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px black;
+}
+@keyframes move-text {
+
+  0% {
+    transform: rotate(0deg)
+               translate(-50px)
+               rotate(0deg);
+               opacity: 1;
+  }
+  15% {
+               opacity: 1;
+  }
+  30% {
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(360deg)
+               translate(-50px) 
+               rotate(-360deg);
+               opacity: 0;
+  }
+}
 .skills {
     width: 4em;
     height: 100%;
@@ -1254,5 +1410,32 @@ img.buy-icon {
     font-size: 1.8em;
     color: white;
     text-shadow: 2px 2px black;
+}
+.bonus {
+  color: aqua;
+}
+@media only screen and (max-width: 600px) {
+  body {
+    background-color: lightblue;
+  }
+  .game-area {
+    width: 100%;
+    height: 200%;
+    min-width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column-reverse;
+    background-size: 300%;
+    background-position: top right;
+  }
+  .left, .right {
+    width: 100%;
+    min-width: 100%;
+    min-height: 100vh
+  }
+  .monster-status {
+        margin-top: 100%;
+  }
 }
 </style>
