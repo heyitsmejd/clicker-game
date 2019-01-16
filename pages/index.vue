@@ -1,9 +1,8 @@
 <template>
-  <section class="container">
     <div class="flex-centered">
       <div class="game-area">
         <div class="game-modal" v-if="viewModal">
-          <div class="game-modal-bg" @click="viewModal = !viewModal"></div>
+          <div class="game-modal-bg" ></div>
           <div class="game-modal-content">
             <div class="game-modal-header">
               <div class="game-modal-text">Congratulations! Achievement Earned!</div>
@@ -33,7 +32,7 @@
               </div>
                 <div class="left-panel-content">
                 <div class="left-big-menu">
-                  <div class="menu-option">
+                  <div class="menu-option current-tab">
                     <div class="menu-option-content">
                       <img class="menu-icon" src="icons/sword.png">
                       <div>Heroes</div>
@@ -57,39 +56,25 @@
                       <div>Stats</div>
                     </div>
                   </div>
-                </div>
-                <div class="left-small-menu">
-                    <a class="level-option-button level-rate-btn" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
-                      1x
-                    </a>
-                    <a  class="level-option-button level-rate-btn" @click="setLevelRate(10)" :class="{ 'is-active-option' : currentLevelRate == 10 }">
-                      10x
-                    </a>
-                    <a class="level-option-button level-rate-btn" @click="setLevelRate(25)" :class="{ 'is-active-option' : currentLevelRate == 25 }">
-                      25x
-                    </a>
-                    <a class="level-option-button level-rate-btn" @click="setLevelRate(100)" :class="{ 'is-active-option' : currentLevelRate == 100 }">
-                      100x
-                    </a>
-                </div>     
+                </div>  
                 <div class="character-list"> 
                   <div class="char-slot-bg" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
                     <div class="character" v-if="character.name != null">
                     <div class="character-left">
                       <div class="char-cost">
-                        <a class="buy-char" v-if="!character.bought" @click="buyCharacter(character.name)">
-                          <div class="button-overlay"></div>
-                          <div class="char-cost-amount">
+                        <a class="push_button blue" v-if="!character.bought" @click="buyCharacter(character.name)">
+                       <!--    <div class="button-overlay"></div>
+                          <div class=""> -->
                           <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
                           <div class="char-hire-button"  >HIRE</div>
-                          </div>
+                      <!--     </div> -->
                         </a>
-                        <a class="buy-char" v-else @click="levelCharacter(character.name)">
-                          <div class="button-overlay pink-overlay"></div>
-                          <div class="char-cost-amount pink">
+                        <a class="push_button purple" v-else @click="levelCharacter(character.name)">
+<!--                           <div class="button-overlay pink-overlay"></div>
+                          <div class="char-cost-amount pink"> -->
                           <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
                           <div class="char-hire-button">LEVEL UP</div>
-                        </div>
+                   <!--      </div> -->
                         </a>
                       </div>
                     </div>
@@ -105,6 +90,20 @@
                     </div>
                   </div>
                 </div>
+                <div class="left-small-menu">
+                    <a class="push_button dark-blue" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
+                      1x
+                    </a>
+                    <a  class="push_button dark-blue" @click="setLevelRate(10)" :class="{ 'is-active-option' : currentLevelRate == 10 }">
+                      10x
+                    </a>
+                    <a class="push_button dark-blue" @click="setLevelRate(25)" :class="{ 'is-active-option' : currentLevelRate == 25 }">
+                      25x
+                    </a>
+                    <a class="push_button dark-blue" @click="setLevelRate(100)" :class="{ 'is-active-option' : currentLevelRate == 100 }">
+                      100x
+                    </a>
+                </div> 
               </div>
               </div>
             </div>
@@ -121,8 +120,7 @@
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
-               <!--  <canvas id="hit-numbers" class="canvas" width="512px" height="640px"></canvas> -->
-                <canvas id="monster-area" class="canvas new-monster" width="512px" height="640px"></canvas>
+                <canvas id="monster-area" class="canvas new-monster" width="512px" height="448px"></canvas>
               <div class="hit-area" id="hit-area"></div>
               <div id="hit-numbers"></div>
             </div>
@@ -130,15 +128,38 @@
               <div class="monster-name">{{monsterName}}</div>
               <div class="hp-text">{{formatNumber(monsterCurrentHP)}}/{{formatNumber(monsterMaxHP)}}</div>
               <div class="monster-hp-bar">
-              <div class="health" :style="{'width' : `${((monsterCurrentHP/monsterMaxHP) * 100)}%`,
-              'background' : `${getHealthColor(((monsterCurrentHP/monsterMaxHP) * 100))}`}"></div>
+              <div class="health health-anim-slow" :class="getHealthColor(((monsterCurrentHP/monsterMaxHP) * 100))":style="{'width' : `${((monsterCurrentHP/monsterMaxHP) * 100)}%`}"></div>
+              <div class="monster-hp-bar-border"></div>
+              </div>
+
+            </div>
+            <div class="skills-area">
+              <div class="skill-container">
+                <a @click="specialRapidClick(25)"><div class="skill-spell" :class="{ 'disabled' : !skillReady}" :style="{'background-image': `url('icons/spells/rapid.png')`}" >
+                  <div class="spell-badge">1</div>
+                  <div id="demo"></div>
+                </div></a>
+                <div class="skill-spell">
+                  <div class="spell-badge">2</div>
+                </div>
+                <div class="skill-spell">
+                  <div class="spell-badge">3</div>
+                </div>
+                <div class="skill-spell">
+                  <div class="spell-badge">4</div>
+                </div>
+                <div class="skill-spell">
+                  <div class="spell-badge">5</div>
+                </div>
+                <div class="skill-spell last">
+                  <div class="spell-badge">6</div>
+                </div>
               </div>
             </div>
           </div>
           </div>
       </div>
     </div>
-  </section>
 </template>
 
 <script>
@@ -155,6 +176,13 @@ export default {
     setTimeout(() => self.dealAutoDamage(), 1500)
     this.updateDmgPos()
     this.checkAchievements()
+    document.onkeydown = function(e){
+        e = e || window.event;
+        var key = e.which || e.keyCode;
+        if(key===49){
+            self.specialRapidClick(25);
+        }
+    }
   },
   computed: {
     availableCharacters: function() { 
@@ -165,27 +193,8 @@ export default {
         return bought.reverse()
       }
       var nextChar = character.find((char, index) => char.bought == false)
-      //var disabledChar = character.findIndex(char => char.name == nextChar.name)
       var returned = bought.concat(nextChar)
       return returned.reverse()
-      // if(disabledChar != null)
-      // {
-      //   if(bought.length == 0)
-      //   {
-      //     return returned.concat(character[disabledChar + 1],character[disabledChar + 2]).reverse()
-      //   }
-      //   if(bought.length == character.length)
-      //   {
-      //     return returned.reverse()
-      //   }
-      //   else{
-      //     return returned.concat(character[disabledChar + 1]).reverse()
-      //   }
-        
-      // }
-      // else {
-      //   return returned.reverse()
-      // }
     },
     currentLevelRate: function(){
       return this.levelRate
@@ -195,15 +204,27 @@ export default {
     return {
       viewModal: false,
       modalHeader: '',
+      skillCooldown: '',
+      skillReady: true,
       modalContent: '',
       modalReward: '',
       achievements: [{
         name: 'Beginner Clicker',
         reward: 0.01,
         rewardType: 'dps',
-        text: `You've clicked 5 times!`,
-        requirement: 5,
+        text: `You've clicked 200 times!`,
+        requirement: 200,
         requireType: 'click',
+        icon: 'icons/sword.png',
+        earned: false,
+        seen: false
+      },{
+        name: 'Rapid Clicker',
+        reward: 1,
+        rewardType: 'dpc',
+        text: `Clicked 10 times in one second`,
+        requirement: 10,
+        requireType: 'clicksPerSecond',
         icon: 'icons/sword.png',
         earned: false,
         seen: false
@@ -211,25 +232,26 @@ export default {
       dpsBonus: '',
       dpcBonus: '',
       clickCount: 0,
+      clicksPerSecond: 0,
       dps: 0,
       dpc: 1,
       levelRate: 1,
       isBossLevel: false,
       bossKilled: false,
-      isAttackable: true,
+      isAttackable: false,
       monsterOrder: -1,
       monsterCurrentHP: '',
       monsterMaxHP: '',
       image: '',
       monsterName: '',
-      goldCount: 500000000000000000000000000,
+      goldCount: 555555,
       goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
       gemCount: 0,
       monsterDeath: true,
       gemBonus: 0,
-      level: 4,
+      level: 1,
       monsterCount: 0,
       monsterMaxCount: 10,
       rebirth: 0,
@@ -330,26 +352,34 @@ export default {
     }
   },
   methods: {
-    attack(e){
-
+    attack(e,special,ranX,ranY){
+      console.log(e)
       if(this.monsterCurrentHP > 0 && this.isAttackable)
       {
-        this.clickCount++;
-        var rect = e.currentTarget.getBoundingClientRect(),
-        offsetX = e.clientX - rect.left,
-        offsetY = e.clientY - rect.top;
-        if(offsetX < 0 || offsetY < 0)
-        {
-          return
+        if(!special){
+          this.clickCount++;
+          this.clicksPerSecond++;
         }
+        else {
+          var offsetX = special.clientX
+          var offsetY = special.clientY
+        }
+          var rect = document.getElementById('monster-area').getBoundingClientRect(),
+          offsetX = e.clientX - rect.left,
+          offsetY = e.clientY - rect.top;
+          if(offsetX < 0 || offsetY < 0)
+          {
+            return
+          }
+          event.preventDefault;
         document.getElementsByClassName('hit-area')[0].style.left = `${offsetX-50}px`;
         document.getElementsByClassName('hit-area')[0].style.top = `${offsetY-50}px`;
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
-        event.preventDefault;
+        
         document.getElementsByClassName('hit-area')[0].classList.remove('hit-anim')
         // -> triggering reflow /* The actual magic */
         // without this it wouldn't work. Try uncommenting the line and the transition won't be retriggered.
-        void event.target.offsetWidth;
+        //void event.target.offsetWidth;
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
         this.monsterCurrentHP = this.monsterCurrentHP - this.dpc;
@@ -372,10 +402,13 @@ export default {
         this.monsterCurrentHP = 0;
         //kill monster!
         this.killMonster();
+        setTimeout(() => {
+          document.getElementsByClassName('health')[0].classList.remove('health-anim-slow')
+          document.getElementsByClassName('health')[0].classList.add('health-anim-quick')
+        }, 500)
       }
     },
     checkAchievements(){
-      console.log('checking achievements...')
       var self = this
       setTimeout(() => {
       self.achievements.forEach(ach => {
@@ -385,15 +418,28 @@ export default {
           self.modalHeader = ach.name 
           if(ach.rewardType == "dps"){
             self.modalReward = "+" + ach.reward + '% DPS!'
-            self.dpsBonus = self.dpsBonus + 0.01;
+            self.dpsBonus = self.dpsBonus + ach.reward;
+          }
+          ach.seen = true
+          ach.earned = true
+          self.viewModal = true;
+        }
+        if(ach.requireType == "clicksPerSecond" && ach.requirement <= self.clicksPerSecond && !ach.earned && !ach.seen)
+        {
+          self.modalContent = ach.text
+          self.modalHeader = ach.name 
+          if(ach.rewardType == "dpc"){
+            self.modalReward = "+" + ach.reward + ' DPC!'
+            self.dpc = self.dpc + ach.reward;
           }
           ach.seen = true
           ach.earned = true
           self.viewModal = true;
         }
       })
+      self.clicksPerSecond = 0;
       this.checkAchievements()
-      }, 2500)
+      }, 1000)
     },
     dealAutoDamage(){
       var self = this
@@ -403,7 +449,12 @@ export default {
         if(this.isAttackable)
         {
           self.monsterCurrentHP = self.monsterCurrentHP - self.dps
+          if(self.monsterCurrentHP < 0)
+          {
+            self.monsterCurrentHP = 0;
+          }
         }
+        return
       }
       if(self.monsterCurrentHP <= 0 && self.monsterDeath == false)
       {
@@ -418,10 +469,8 @@ export default {
     buyCharacter(charName){
 
       var index = this.characters.findIndex( slot => slot.name == charName )
-      console.log(this.characters.length, index+2)
       if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
       {
-        console.log('Bought ' + charName + '!')
         this.characters[index].bought = true;
         this.dps = this.dps + this.characters[index].dps
         this.characters[index+1].disabled = false;
@@ -439,7 +488,6 @@ export default {
       var levelBg = this.maps.find(i => {
         return i.levelMin <= this.level && i.levelMax >= this.level
       })
-      console.log(levelBg)
       document.getElementsByClassName('game-area')[0].style.backgroundImage = `url('${levelBg.image}')`
       }
     },
@@ -460,8 +508,6 @@ export default {
       else {
         setTimeout(() => self.changeMonster(), 1500)
       }
-      
-      console.log('monster died!')
     },
     formatNumber(num){
        if (num >= 1000000000000000000000000000000000000000000000000000000000000000000) {
@@ -539,6 +585,46 @@ export default {
           this.getNewMonster()      
       }
     },
+    simulateClick(x, y) {
+       console.log(`X: ${x}, Y:${y}`)
+    var clickEvent = document.createEvent('MouseEvents');
+    clickEvent.initMouseEvent(
+    'click', true, true, window, 0,
+    0, 0, x, y, false, false,
+    false, false, 0, null
+    );
+    document.elementFromPoint(x, y).dispatchEvent(clickEvent);
+    }, 
+    specialRapidClick(amt){
+      if(this.skillReady)
+      {
+      var rect = document.getElementById('monster-area').getBoundingClientRect()
+      console.log(rect)
+        var randomClicks = []
+        var self = this
+        for(let i = 0; i < amt; i++)
+        {
+            var ranX = Math.floor(Math.random() * (rect.right - rect.left)) + rect.left
+            var ranY = Math.floor(Math.random() * (rect.bottom - rect.top)) + rect.top
+            randomClicks.push({x: ranX, y: ranY})
+        }
+        function runClicks(){
+          if(randomClicks.length > 0)
+          {
+           setTimeout(() => {
+            self.simulateClick(randomClicks[0].x,randomClicks[0].y);
+            randomClicks.shift()
+            runClicks()
+            }, 1000/amt)
+          }
+        }
+        if(randomClicks.length > 0){
+          runClicks()
+        }
+        this.skillReady = false;
+        this.specialCooldownTimer()
+        }
+    },
     setLevelRate(amt){
       this.levelRate = amt
     },
@@ -563,7 +649,6 @@ export default {
       var index = this.characters.findIndex( slot => slot.name == charName)
       let char = this.characters[index]
       let totalDps = char.baseDps * char.level;
-      console.log(`${charName}'s new dps is ${totalDps}`)
       char.dps = totalDps;
     },
     levelCharacter(charName){
@@ -620,22 +705,6 @@ export default {
           }, 1000/120)
     },
     showDamageNumbers(offsetX, offsetY, amount){
-        // var self = this;
-        // var canvas_size_x = 512;
-        // var canvas_size_y = 640;
-        // var canvas = document.getElementById('hit-numbers');
-        // var context = canvas.getContext('2d');
-        // var reverse = false;
-        // context.font = "30px Arial";
-        // context.fillStyle = `rgba(255,255,255,1)`; 
-        // function draw() {      
-        // context.clearRect(0, 0, canvas_size_x, canvas_size_y);
-        // self.recentHits.forEach(hit => {
-        //   context.fillText(hit.amount, hit.x, hit.y);
-        // })
-        // global.requestAnimationFrame(draw)
-        // }
-        // draw()
         if(offsetX < 0 || offsetY < 0)
         {
           return
@@ -648,6 +717,35 @@ export default {
           node.appendChild(textnode); 
           document.getElementById("hit-numbers").appendChild(node);    
     },
+    specialCooldownTimer(spell){
+      // Update the count down every 1 second
+      var countDownDate = new Date();
+      var self = this
+      var newDateObj = new Date(countDownDate.getTime() + 30000);
+      var x = setInterval(function() {
+
+        // Get todays date and time
+        var now = new Date().getTime();
+
+        // Find the distance between now and the count down date
+        var distance = newDateObj - now;
+
+        // Time calculations for days, hours, minutes and seconds
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Display the result in the element with id="demo"
+        document.getElementById("demo").innerHTML = seconds + "s ";
+
+        // If the count down is finished, write some text 
+        if (distance < 0) {
+          clearInterval(x);
+          self.skillReady = true;
+          document.getElementById("demo").innerHTML = "";
+        }
+      }, 1000);
+    },
     getNewMonster(){
       this.monsterOrder += 1;
       if(this.monsterOrder > this.monsters.length - 1)
@@ -655,8 +753,8 @@ export default {
         this.monsterOrder = 0;
       }
       this.monsterName = this.monsters[this.monsterOrder].monsterName
-      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.025, this.level)))
-      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.025, this.level)))
+      this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
+      this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
       this.image = this.monsters[this.monsterOrder].image
       if(this.level % 5 === 0)
       {
@@ -668,14 +766,14 @@ export default {
         this.image = this.bosses[0].image
       }
       var self = this
-      var imgX = 265;
-      var imageX = 200;
-      var imageY = 300;
-      var step = 165;
-      var stepMin = 155
-      var stepMax = 175
+      var imgX = 55;
+      var imageX = 250;
+      var imageY = 350;
+      var step = 55;
+      var stepMin = 45
+      var stepMax = 65
       var canvas_size_x = 512;
-      var canvas_size_y = 640;
+      var canvas_size_y = 448;
       var reverse = false;
       function draw() {
             if(!reverse){
@@ -703,26 +801,30 @@ export default {
       context.shadowColor = "rgba(0,0,0,0.8)";
       context.fillStyle = `rgba(255,255,255,1)`;       
       context.clearRect(0, 0, canvas_size_x, canvas_size_y);
-        context.drawImage(imageObj, 150, step, imageX, imageY);
+        context.drawImage(imageObj, 130, step, imageX, imageY);
         global.requestAnimationFrame(draw)
       }
       draw()
       this.monsterDeath = false
       document.getElementById('monster-area').classList.remove('kill-monster')
       document.getElementById('monster-area').classList.add('new-monster')
-      setTimeout(() => { this.isAttackable = true} , 1000)
+      setTimeout(() => { 
+        self.isAttackable = true;
+        document.getElementsByClassName('health')[0].classList.remove('health-anim-quick')
+        document.getElementsByClassName('health')[0].classList.add('health-anim-slow')
+      } , 500)
     },
     getHealthColor(num){
-      if(num >= 66 )
+      if(num >= 70 )
       {
-        return '#2fd764'
+        return 'green-hp'
       }
-      if(num >= 33 && num < 66)
+      if(num >= 25 && num < 70)
       {
-        return '#d7cb2f'
+        return 'orange-hp'
       }
-      if(num >= 0 && num < 33){
-        return '#d72f5c'
+      if(num >= 0 && num < 25){
+        return 'red-hp'
       }
     }
   }
@@ -740,6 +842,14 @@ body {
 .flex-centered {
   display: flex;
   justify-content: center;
+}
+.skills-area {
+    z-index: 200;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    height: 15%;
+    align-items: flex-end;
 }
 .game-modal-content {
     width: 40%;
@@ -782,6 +892,7 @@ body {
     z-index: 200;
 }
 .monster-status {
+    pointer-events: none;
     align-items: flex-end;
     z-index: 10;
     -moz-user-select: none;
@@ -793,22 +904,31 @@ body {
     align-items: flex-end;
     justify-content: center;
     height: 20%;
-    margin-top: 50%;
+    margin-top: 45%;
 }
 .monster-hp-bar {
+    background: #191e2f;
+    padding: 3px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset;
     width: 40%;
     z-index: 99;
-    background: #4c3f3f;
     height: 2em;
     border-radius: 4em;
-    box-shadow: 0px 0px 0 3px black;
     overflow: hidden;
-   /*
-     Introduced in IE 10.
-     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
-   */
-   -ms-user-select: none;
-   user-select: none;
+    position: relative;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+.monster-hp-bar-border {
+    z-index: 150;
+    height: 100%;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    top: 0;
 }
 .monster-name {
     font-family: dosis;
@@ -950,6 +1070,18 @@ span.med-btn-text {
     background: #434c6a;
     flex-direction: column;
 }
+.spell-badge {
+    font-size: 0.6em;
+    line-height: 0.7;
+    position: absolute;
+    left: 0;
+    color: white;
+    background: #303852;
+    padding: 0.4em;
+    padding-left: 0.4em;
+    padding-right: 0.6em;
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+}
 .right {
     width: 50%;
     height: 100%;
@@ -959,9 +1091,11 @@ span.med-btn-text {
     position: absolute;
     justify-content: center;
     display: flex;
-    height: 100%;
+    height: 70%;
     width: 100%;
     z-index: 5;
+
+    margin-bottom: 20%;
     bottom: 0;
 }
 .hit-area {
@@ -990,14 +1124,26 @@ span.med-btn-text {
   50% {opacity: 0.5;  background-size: 35%}
   100% {opacity: 0;  background-size: 100%;}
 }
-
+.green-hp {
+  background: #16e473;
+    box-shadow: 0 1px 0px 2px rgb(22, 221, 112) inset, 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 4px 0 #363e5a, inset 0 0px 16px 4px rgba(0, 29, 8, 0.35);
+}
+.orange-hp {
+  background: #eaca1f !important;
+position: relative;
+    box-shadow: 0 1px 0px 2px rgb(255, 217, 55) inset, 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 4px 0 #35382c, inset 0 0px 16px 4px rgba(228, 158, 0, 0.4);
+}
+.red-hp {
+background: #f33041 !important;
+box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 4px 0 #35382c, inset 0 0px 16px 4px rgb(160, 44, 54);
+}
 .health {
+    z-index: 40;
     height: 100%;
     width: 100%;
-    background: red;
     border-radius: 4em;
-    transition: width 1s ease;
     position: relative;
+
 }
 .hp-text {
     width: 100%;
@@ -1024,6 +1170,36 @@ span.med-btn-text {
     text-shadow: 2px 2px black;
     line-height: 2;
 }
+.skill-container {
+    display: flex;
+    padding: 0.25em;
+    background: #303852;
+    border-radius: 4px;
+    box-shadow: 1px 1px 0 rgb(74, 88, 133) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+}
+#demo {
+    position: absolute;
+    font-size: 1em;
+    width: 100%;
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 1px 1px black;
+}
+.skill-spell {
+    width: 3em;
+    height: 3em;
+    position: relative;
+    background: #4a5885;
+    margin-right: 0.25em;
+    background-position: center;
+    background-size: cover;
+}
+.last {
+  margin-right: 0;
+}
 .kill-monster {
      -webkit-transition: opacity 1s ease-in-out;
     -moz-transition: opacity 1s ease-in-out;
@@ -1032,24 +1208,21 @@ span.med-btn-text {
     opacity: 0; 
     z-index: 1;
 }
+.health-anim-slow {
+  transition: width 0.5s ease-in-out;
+}
+.health-anim-quick {
+  transition: 0s;
+}
 canvas#hit-numbers {
     position: absolute;
     z-index: 2;
 }
 .new-monster {
-/*     -webkit-transition: opacity 2s ease-in;
-    -moz-transition: opacity 2s ease-in;
-    -o-transition: opacity 2s ease-in;
-    -ms-transition: opacity 2s ease-in;
-    transition: opacity 2s ease-in;*/
     z-index: 1;
     opacity: 1;
-    animation: slide-in 1s normal forwards ease-in;
 }
-/*@keyframes slide-in {
-  from {  margin-right: -500px; }
-  to { margin-right: 0 }
-}*/
+
 .left-small-menu {
     background: linear-gradient(#434c6a,#343b50);
     height: 3em;
@@ -1057,13 +1230,29 @@ canvas#hit-numbers {
     display: flex;
     padding: 0.5em;
 }
-.level-option-button:before {
+/*.level-option-button:before {
     content: ' ';
     background: linear-gradient(#ffffff0f,transparent);
     width: 90%;
     height: 70%;
     position: absolute;
     border-radius: 6px;
+}*/
+.dark-blue {
+    text-shadow: -1px -1px 0 #323c5f;
+    background: #252e4a;
+    border: 1px solid #44517b;
+    background-image: linear-gradient(to bottom, #5c678c, #434c6a);
+    border-radius: 5px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #363e5a, 0 4px 2px rgba(0, 0, 0, .5);
+}
+.dark-blue:hover {
+    color: #5ac2ff;
+    background-image: linear-gradient(to bottom, #434c6a,#5c678c);
+}
+.dark-blue:active {
+  background-image: linear-gradient(to bottom, #434c6a,#5c678c);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset;
 }
 .level-option-button {
     color: grey;
@@ -1082,7 +1271,7 @@ canvas#hit-numbers {
   color: #5ac2ff;
 }
 .is-active-option {
-  color: #5ac2ff;
+    color: #34fef6 !important;
 }
 .level-option-button:last-child {
     margin-right: 0 !important;
@@ -1182,20 +1371,16 @@ canvas#hit-numbers {
 {
   background-color: #52608e;
   border-radius: 4px;
-/*  background-image: -webkit-gradient(linear, 0 0, 0 100%,
-                     color-stop(.5, rgba(255, 255, 255, .2)),
-             color-stop(.5, transparent), to(transparent));*/
 }
 .character {
     display: flex;
     width: 100%;
     height: 115px;
-    border-radius: 8px;
     position: relative;
+    justify-content: space-between;
 }
 .character-left {
     display: flex;
-    width: 40%;
     align-items: center;
     flex-direction: column;
     color: white;
@@ -1205,7 +1390,7 @@ canvas#hit-numbers {
     justify-content: flex-end;
     display: flex;
     width: 100%;
-    color: lightgray;
+    color: #4dc4e0;
 }
 .pink {
     background: linear-gradient(rgb(241, 8, 255),rgb(171, 22, 247)) !important;
@@ -1214,13 +1399,14 @@ canvas#hit-numbers {
     background: linear-gradient(rgba(255, 118, 244, 0.34118),rgba(0, 203, 224, 0.23922));
 }
 .char-name {
+    text-shadow: 2px 2px black;
     width: 100%;
     align-items: center;
     display: flex;
     justify-content: flex-end;
     padding-top: 0.5em;
     font-size: 1.5em;
-    color: white;
+    color: #efefef;
 }
 .level-select {
   display: flex;
@@ -1228,6 +1414,8 @@ canvas#hit-numbers {
 }
 .char-cost {
     padding: 1em;
+    padding-top: 0.5em;
+    padding-left: 0;
     align-items: center;
     align-self: flex-start;
     display: flex;
@@ -1244,16 +1432,6 @@ canvas#hit-numbers {
     background: radial-gradient(#dcd0d05e, #0c0c0c47);
     border: solid 2px #00000029;
 }
-/*.panel-bg {
-    position: absolute;
-    top: -5%;
-    left: -5%;
-    position: absolute;
-    background: linear-gradient(#5ac2ff, #30468e);
-    border: solid 2px black;
-    width: 110%;
-    height: 110%;
-}*/
 .char-cost-amount {
     box-shadow: inset 0px 0px 20px 3px #000000;
     width: 100%;
@@ -1301,25 +1479,16 @@ canvas#hit-numbers {
     padding-bottom: 0;
     line-height: 2em;
 }
-.health:before {
-    position: absolute;
-    content: " ";
-    background: linear-gradient(rgba(222, 215, 215, 0.05),rgba(14, 14, 14, 0.13));
-    box-shadow: 4px 4px 20px 0px rgba(0,0,0,0.2902);
-    border-radius: 1em;
-    width: 100%;
-    height: 100%;
-}
 .character:before {
     position: absolute;
-    left: 2%;
-    top: 6%;
+    left: 0;
+    top: 0;
     content: " ";
-    background: linear-gradient(#546290,#3d4a77);
-    box-shadow: 4px 4px 20px 0px #0000004a;
-    border-radius: 6px;
-    width: 95.5%;
-    height: 85%;
+    background: linear-gradient(#3e4869,#2b3656);
+    box-shadow: 0 1px 0 rgb(82, 97, 144) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+    border-radius: 0;
+    width: 100%;
+    height: 100%;
 }
 .char-hire-button {
     width: 100%;
@@ -1355,27 +1524,19 @@ canvas#hit-numbers {
   height: 2em;
   width: 2em;
 }
+.current-tab {
+       background: linear-gradient(#818594, #434a63) !important;
+}
 .menu-option {
+    z-index: 5;
     display: flex;
     width: 25%;
-    margin: 0.5em;
-    border-radius: 8px;
-    background: linear-gradient(#7685b7, #5a68a7);
+    background: linear-gradient(#9ba6ca, #586084);
+    background: linear-gradient(#6d7590, #303852);
     margin-left: 0;
     position: relative;
-}
-.menu-option:before {
-    content: ' ';
-    position: absolute;
-    width: 95%;
-    top: 2.5%;
-    left: 2.5%;
-    height: 95%;
-    border-radius: 8px;
-    background: linear-gradient(#9eade0, #66719c);
-}
-.menu-option:first-child {
-  margin-left: 0.5em;
+    border-right: #1c1e25 solid 1px;
+    box-shadow: 0px 1px 0 rgba(255, 255, 255, .5) inset;
 }
 .buy-char {
     padding: 0.25em;
@@ -1398,6 +1559,7 @@ img.buy-icon {
   z-index: 10;
 }
 .level-area {
+    pointer-events: none;
     z-index: 99;
     height: 15%;
     display: flex;
@@ -1411,8 +1573,61 @@ img.buy-icon {
     color: white;
     text-shadow: 2px 2px black;
 }
+.purple {
+    text-shadow: -1px -1px 0 #784698;
+    background: #984cc5;
+    border: 1px solid #4e2958;
+    background-image: linear-gradient(to bottom, #dd48e6, #904fab);
+    border-radius: 5px;
+    box-shadow: 0 1px 0 rgba(252, 231, 255, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #492a54, 0 4px 2px rgba(0, 0, 0, .5);
+}
 .bonus {
   color: aqua;
+}
+.push_button {
+    position: relative;
+    max-height: 80px;
+    width: 127px;
+    padding-left: 1em;
+    padding-right: 1em;
+    color: #FFF;
+    text-decoration: none;
+    line-height: 43px;
+    font-family: 'dosis';
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+.blue {
+    text-shadow: -1px -1px 0 #3a94d4;
+    background: #48b7c3;
+    border: 1px solid #3a86a9;
+    background-image: linear-gradient(to bottom, #53c8e2, #238bb3);
+    border-radius: 5px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #206179, 0 4px 2px rgba(0, 0, 0, .5);
+}
+.push_button:hover {
+  color: white !important;
+}
+
+.blue:hover {
+  background-image: linear-gradient(to bottom, #238bb3, #53c8e2);
+  color: white;
+}
+.push_button:active {
+      -webkit-box-shadow:0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset;
+    top:2px;
+}
+.push_button:active:before{
+    top: -11px;
+    bottom: -5px;
+    content: "";
+}
+.blue:active {
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
 }
 @media only screen and (max-width: 600px) {
   body {
@@ -1438,4 +1653,5 @@ img.buy-icon {
         margin-top: 100%;
   }
 }
+
 </style>
