@@ -1,5 +1,10 @@
 <template>
     <div class="flex-centered">
+      <div class="user-area">
+        <input type="text" v-model="username">
+        <input type="password" v-model="password">
+        <button @click="logIn()">Log in</button>
+      </div>
       <div class="game-area">
         <div class="game-modal" v-if="viewModal">
           <div class="game-modal-bg" ></div>
@@ -17,78 +22,82 @@
           <div class="left">
               <div class="left-panel">
                 <div class="stats-area">
-                <div class="gold-stat stat-tab"><img class="stat-icon" src="icons/coin.png">
+                <div class="gold-stat stat-tab">
                   {{formatNumber(goldCount)}}
                 </div>
-                <div class="gem-stat stat-tab"><img class="stat-icon" src="icons/gem.png">
+                <div class="gem-stat stat-tab">
                   {{ formatNumber(gemCount)}}
                 </div>
-                <div class="click-stat stat-tab"><img class="stat-icon" src="icons/dagger.png">
+                <div class="click-stat stat-tab">
                  DPC: {{formatNumber(dpc)}}
                 </div>
-                <div class="dps-stat stat-tab"><img class="stat-icon" src="icons/wand.png">
+                <div class="dps-stat stat-tab">
                   DPS: {{formatNumber(dps)}}
                 </div>
               </div>
                 <div class="left-panel-content">
                 <div class="left-big-menu">
-                  <div class="menu-option current-tab">
+                  <div class="tab-menu-option">
                     <div class="menu-option-content">
-                      <img class="menu-icon" src="icons/sword.png">
-                      <div>Heroes</div>
+                      <img class="menu-icon" src="heroestab.svg">
                     </div>
                   </div>
-                  <div class="menu-option">
+                  <div class="tab-menu-option inactive-tab">
                    <div class="menu-option-content">
-                      <img class="menu-icon" src="icons/shop.svg">
-                      <div>Shop</div>
+                      <img class="menu-icon" src="achtab.svg">
                     </div>
                   </div>
-                  <div class="menu-option">
+                  <div class="tab-menu-option inactive-tab">
                     <div class="menu-option-content">
-                      <img class="menu-icon" src="icons/achievement.svg">
                       <div>Achievements</div>
                     </div>
                   </div>
-                  <div class="menu-option">
+                  <div class="tab-menu-option inactive-tab">
                    <div class="menu-option-content">
-                      <img class="menu-icon" src="icons/stats.svg">
                       <div>Stats</div>
                     </div>
                   </div>
                 </div>  
+                <div class="left-panel-body">
                 <div class="character-list"> 
                   <div class="char-slot-bg" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
                     <div class="character" v-if="character.name != null">
                     <div class="character-left">
-                      <div class="char-cost">
-                        <a class="push_button blue" v-if="!character.bought" @click="buyCharacter(character.name)">
-                       <!--    <div class="button-overlay"></div>
-                          <div class=""> -->
-                          <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
-                          <div class="char-hire-button"  >HIRE</div>
-                      <!--     </div> -->
-                        </a>
-                        <a class="push_button purple" v-else @click="levelCharacter(character.name)">
-<!--                           <div class="button-overlay pink-overlay"></div>
-                          <div class="char-cost-amount pink"> -->
-                          <div class="char-amount-gold"><img class="buy-icon" src="icons/coin.png"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
-                          <div class="char-hire-button">LEVEL UP</div>
-                   <!--      </div> -->
-                        </a>
-                      </div>
-                    </div>
-                    <div class="char-info">
-                      <div class="char-stats">
-                        <div class="char-name">{{character.name}}</div>
-                        <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
-                      </div>
                       <div class="char-img">
                           <div class="char-portrait" :style="{'background-image' : `url('heroes/${character.headImg}')`}"></div>                        
                       </div>
                     </div>
+                    <div class="char-info">
+                      <div class="char-info-header">
+                        <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
+                        <div class="char-name">{{character.name}}</div>
+                      </div>
+                      <div class="char-info-body">
+                        <div class="char-spells">
+                          <div class="char-spell-icon">
+                          </div>
+                          <div class="char-spell-icon">
+                          </div>
+                          <div class="char-spell-icon">
+                          </div>
+                        </div>
+                                              <div class="char-cost">
+                        <a class="push_button blue" v-if="!character.bought" @click="buyCharacter(character.name)">
+
+                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
+                          <div class="char-hire-button"  >HIRE</div>
+                        </a>
+                        <a class="push_button purple" v-else @click="levelCharacter(character.name)">
+
+                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
+                          <div class="char-hire-button">LEVEL UP</div>
+                        </a>
+                      </div>
+                      </div>
+                    </div>
                     </div>
                   </div>
+                </div>                  
                 </div>
                 <div class="left-small-menu">
                     <a class="push_button dark-blue" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
@@ -177,7 +186,7 @@
 
 <script>
 import Logo from '~/components/Logo.vue'
-
+import io from 'socket.io-client';
 export default {
   components: {
     Logo
@@ -196,6 +205,12 @@ export default {
             self.specialRapidClick(25);
         }
     }
+    this.socket.on('ATTACK', data => {
+      this.monsterCurrentHP = this.monsterCurrentHP - data.amount;
+    })
+    this.socket.on('GOLD', data => {
+      this.goldCount = this.goldCount + data.goldAmount
+    })
   },
   computed: {
     availableCharacters: function() { 
@@ -215,6 +230,10 @@ export default {
   },
   data() {
     return {
+      username: '',
+      password: '',
+      socket: io('localhost:3001'),
+      user: '',
       viewModal: false,
       modalHeader: '',
       skillCooldown: '',
@@ -257,7 +276,7 @@ export default {
       monsterMaxHP: '',
       image: '',
       monsterName: '',
-      goldCount: 555555,
+      goldCount: 0,
       goldBonus: 100,
       vipCount: 0,
       vipBonus: 0,
@@ -365,8 +384,17 @@ export default {
     }
   },
   methods: {
+    logIn(){
+        var self = this;
+          this.$axios.$post(`http://localhost:3001/login`, { username : self.username, password : self.password})
+          .then((res) => {
+            console.log(res)
+          }).catch(e => {
+            console.log(e)
+          //  console.log(e)
+          })
+    },
     attack(e,special,ranX,ranY){
-      console.log(e)
       if(this.monsterCurrentHP > 0 && this.isAttackable)
       {
         if(!special){
@@ -392,10 +420,15 @@ export default {
         document.getElementsByClassName('hit-area')[0].classList.remove('hit-anim')
         // -> triggering reflow /* The actual magic */
         // without this it wouldn't work. Try uncommenting the line and the transition won't be retriggered.
-        //void event.target.offsetWidth;
+        //Do not remove below.
+        void event.target.offsetWidth;
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
-        this.monsterCurrentHP = this.monsterCurrentHP - this.dpc;
+        this.socket.emit('DAMAGE', {
+          user: this.user,
+          amount: this.dpc
+        })
+
         var self = this
         this.recentHits.push({"x": offsetX, "y": offsetY, "amount": this.dpc, "maxY" : offsetY - 60,
         'maxYHit' : false})
@@ -509,7 +542,11 @@ export default {
       document.getElementById('monster-area').classList.remove('new-monster')
       document.getElementById('monster-area').classList.add('kill-monster')
       //add some gold!
-      this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
+      this.socket.emit('KILL-MONSTER', {
+          user: this.user,
+          monsterHP: this.monsterMaxHP,
+      })
+      // this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
       var self = this
       if(this.isBossLevel)
       {
@@ -599,7 +636,6 @@ export default {
       }
     },
     simulateClick(x, y) {
-       console.log(`X: ${x}, Y:${y}`)
     var clickEvent = document.createEvent('MouseEvents');
     clickEvent.initMouseEvent(
     'click', true, true, window, 0,
@@ -612,7 +648,6 @@ export default {
       if(this.skillReady)
       {
       var rect = document.getElementById('monster-area').getBoundingClientRect()
-      console.log(rect)
         var randomClicks = []
         var self = this
         for(let i = 0; i < amt; i++)
@@ -1079,7 +1114,6 @@ span.med-btn-text {
 .left-panel {
     display: flex;
     height: 100%;
-    background: #434c6a;
     flex-direction: column;
 }
 .spell-badge {
@@ -1123,7 +1157,7 @@ span.med-btn-text {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;
-    background-image: url(/hit.svg);
+    background-image: URL("hit.svg");
 }
 .hit-anim {
       -webkit-animation: hit;
@@ -1165,10 +1199,11 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
         z-index: 99;
 }
 .stats-area {
-    height: 250%;
     width: 100%;
+    padding: 1em;
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
 }
 .spell-tool-cooldown {
     color: #fc3da0;
@@ -1178,14 +1213,15 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
 }
 .stat-tab {
     display: flex;
-    width: 48%;
+    width: 21%;
     height: 2em;
-    margin: 1%;
     font-weight: bold;
-    font-size: 1.8em;
+    font-size: 1em;
     color: white;
     text-shadow: 2px 2px black;
     line-height: 2;
+    margin: 0.5em;
+    background: #39415b;
 }
 .spell-tool-name {
     color: white;
@@ -1256,6 +1292,20 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     opacity: 0; 
     z-index: 1;
 }
+.left-panel-body {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    background: #3c4563;
+    height: 82.5%;
+    padding: 1em;
+    box-shadow: 0 0 0 1px #5e698e;
+    padding-bottom: 0;
+}
+.user-area {
+    position: absolute;
+    bottom: 5%;
+}
 .health-anim-slow {
   transition: width 0.5s ease-in-out;
 }
@@ -1270,13 +1320,16 @@ canvas#hit-numbers {
     z-index: 1;
     opacity: 1;
 }
-
 .left-small-menu {
-    background: linear-gradient(#434c6a,#343b50);
+    background: #3c4563;
     height: 3em;
-    border-top: solid 2px #2a3044;
     display: flex;
     padding: 0.5em;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 100%;
+    padding-bottom: 1em;
+    box-shadow: 0px 1px 0 1px #5e698e;
 }
 /*.level-option-button:before {
     content: ' ';
@@ -1329,10 +1382,9 @@ canvas#hit-numbers {
   height: 100%;
 }
 .left-big-menu {
-    border-top: solid 2px #2a3044;
-    height: 7em;
-    background: linear-gradient(#434c6a,#343b50);
+    height: 3em;
     display: flex;
+    justify-content: space-around;
 }
 .level-up-buttons {
     border-top: solid 2px #2a3044;
@@ -1396,42 +1448,71 @@ canvas#hit-numbers {
     border-radius: 1em;
     z-index: 1;
 }
-.left-panel-content {
-    height: 80%;
-    width: 100%;
+.tab-menu-option {
+    height: 100%;
+    width: 25%;
+    background: #3c4563;
+    background-size: 50%;
+    background-repeat: no-repeat;
+    box-shadow: 0 -1px 0 1px #5e698e;
 }
-
+.tab-menu-option:first-child {
+      border-top-left-radius: 8px;
+}
+.tab-menu-option:last-child {
+  margin-right: 0;
+  border-top-right-radius: 8px;
+}
+.left-panel-content {
+    height: 85%;
+    width: 95%;
+    margin-left: 1em;
+    border-radius: 8px;
+}
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-  background-color: #191e2f;
+  background-color: #2a3148;
+  height: 40px;
 }
 
 ::-webkit-scrollbar
 {
   width: 10px;
+  height: 40px;
   background-color: red;
   border-radius: 50%;
 }
 
 ::-webkit-scrollbar-thumb
 {
+  height: 20px;
   background-color: #52608e;
   border-radius: 4px;
+  margin-right: 1em;
 }
 .character {
     display: flex;
-    width: 100%;
-    height: 115px;
+    margin-left: 10%;
+    width: 90%;
+    height: 6em;
     position: relative;
     justify-content: space-between;
 }
 .character-left {
+    top: 1px;
+        z-index: 5;
+    height: calc(100% - 2px);
+    left: -3em;
     display: flex;
     align-items: center;
     flex-direction: column;
     color: white;
-    position: relative;
+    position: absolute;
+    background: red;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0px 0px 0 2px #8183bf;
 }
 .char-dps {
     justify-content: flex-end;
@@ -1451,8 +1532,8 @@ canvas#hit-numbers {
     align-items: center;
     display: flex;
     justify-content: flex-end;
-    padding-top: 0.5em;
     font-size: 1.5em;
+    margin-right: 0.5em;
     color: #efefef;
 }
 .level-select {
@@ -1460,24 +1541,26 @@ canvas#hit-numbers {
   height: 15%;
 }
 .char-cost {
-    padding: 1em;
-    padding-top: 0.5em;
-    padding-left: 0;
     align-items: center;
-    align-self: flex-start;
     display: flex;
-    width: 100%;
+    width: 50%;
     height: 100%;
     background: none;
-    justify-content: center;
+    justify-content: flex-end;
+    padding-bottom: 0.25em;
 }
 .char-slot-bg {
     display: flex;
     width: 100%;
-    height: 117.4px;
+    align-items: center;
+    height: 6em;
     position: relative;
-    background: radial-gradient(#dcd0d05e, #0c0c0c47);
-    border: solid 2px #00000029;
+    justify-content: center;
+    margin-bottom: 0.6em;
+    margin-left: 0.5em;
+}
+.char-slot-bg:last-child {
+  margin-bottom: 0;
 }
 .char-cost-amount {
     box-shadow: inset 0px 0px 20px 3px #000000;
@@ -1492,29 +1575,28 @@ canvas#hit-numbers {
     flex-direction: column;
 }
 .char-img {
-    width: 6.5em;
+    width: 6em;
     height: 100%;
-    padding: 1em;
-    padding-right: 1.25em;
-    padding-bottom: 1.25em;
+    border-radius: 50%;
 }
 .char-amount-gold {
+  font-size: 0.8em;
     display: flex;
     width: 100%;
     justify-content: center;
-    line-height: 3;
-    margin-bottom: -0.8em;
+    line-height: 1;
     z-index: 2;
 }
 .character-list {
     display: flex;
     flex-wrap: wrap;
-    overflow-y: scroll;
     background: #303852;
-    height: 352px;
+    height: 100%;
     align-content: flex-start;
     justify-content: center;
-    box-shadow: inset 0 0 20px 20px #00000030;
+    overflow-y: scroll;
+    padding: 0.5em;
+    border: solid 1px #525f8a;
 }
 .disabled {
     filter: grayscale(100%);
@@ -1522,7 +1604,6 @@ canvas#hit-numbers {
 }
 .purchase-amt-text {
     display: inline-block;
-    font-size: 1.5em;
     padding-bottom: 0;
     line-height: 2em;
 }
@@ -1532,8 +1613,9 @@ canvas#hit-numbers {
     top: 0;
     content: " ";
     background: linear-gradient(#3e4869,#2b3656);
-    box-shadow: 0 1px 0 rgb(82, 97, 144) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
-    border-radius: 0;
+    box-shadow: 0 0 0 1px #8183bf;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
     width: 100%;
     height: 100%;
 }
@@ -1541,8 +1623,9 @@ canvas#hit-numbers {
     width: 100%;
     display: flex;
     justify-content: center;
-    font-size: 1.2em;
     z-index: 2;
+    white-space: nowrap;
+    font-size: 0.8em;
 }
 .char-portrait {
     width: 100%;
@@ -1552,38 +1635,74 @@ canvas#hit-numbers {
     border-radius: 6px;
     box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35), 0px 0px 0px 2px rgba(0, 0, 0, 0.35);
 }
+.char-spell-icon {
+    width: 2em;
+    height: 2em;
+    border-radius: 4px;
+    border: solid 1px #2a3147;
+    background: URL("icons/spells/rapid.png");
+    background-size: cover;
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    margin-right: 0.5em;
+}
+.char-spells {
+    display: flex;
+    width: 35%;
+    margin-left: 18%;
+    height: 3em;
+    align-items: flex-end;
+}
+.char-info-header {
+    display: flex;
+    width: 100%;
+    height: 2em;
+    border-top-right-radius: 8px;
+    background: #4c4e88;
+    align-items: center;
+}
+.char-info-body {
+    height: 4em;
+    width: 100%;
+    border-bottom-right-radius: 8px;
+    background: #414273;
+    flex-direction: row;
+    display: flex;
+}
 .char-info {
-    width: 60%;
+    width: 100%;
     z-index: 2;
     display: flex;
     justify-content: flex-end;
+        flex-direction: column;
 }
+
 .menu-option-content {
     z-index: 2;
     display: flex;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     color: white;
     width: 100%;
+    height: 100%;
+    font-size: 0.9em;
 }
 .menu-icon {
-  height: 2em;
-  width: 2em;
+    height: 100%;
+    width: 100%;
+    margin-right: 4px;
 }
-.current-tab {
-       background: linear-gradient(#818594, #434a63) !important;
+.inactive-tab {
+    border-bottom: solid 1px #303852;
+    background: #303958;
 }
 .menu-option {
     z-index: 5;
     display: flex;
     width: 25%;
-    background: linear-gradient(#9ba6ca, #586084);
-    background: linear-gradient(#6d7590, #303852);
     margin-left: 0;
     position: relative;
-    border-right: #1c1e25 solid 1px;
-    box-shadow: 0px 1px 0 rgba(255, 255, 255, .5) inset;
 }
 .buy-char {
     padding: 0.25em;
@@ -1632,7 +1751,7 @@ img.buy-icon {
 }
 .push_button {
     position: relative;
-    max-height: 80px;
+    max-height: 2em;
     width: 127px;
     padding-left: 1em;
     padding-right: 1em;
@@ -1640,7 +1759,7 @@ img.buy-icon {
     text-decoration: none;
     line-height: 43px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     margin-left: 1em;

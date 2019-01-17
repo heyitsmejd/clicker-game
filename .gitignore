@@ -85,3 +85,4 @@ dist
 *.vue
 *.psd
 *.jpg
+static/anim/hit.gif
