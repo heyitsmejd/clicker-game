@@ -138,6 +138,19 @@
                 <a @click="specialRapidClick(25)"><div class="skill-spell" :class="{ 'disabled' : !skillReady}" :style="{'background-image': `url('icons/spells/rapid.png')`}" >
                   <div class="spell-badge">1</div>
                   <div id="demo"></div>
+                  <div class="tool-tip">
+                    <div class="spell-tool-header">
+                      <div class="spell-tool-name">
+                        Rapid Fire
+                      </div>
+                      <div class="spell-tool-cooldown">
+                        30s
+                      </div>                      
+                    </div>
+                    <div class="spell-tool-info">
+                      Rapidly attack <span class="pink-text">25</span> times.
+                    </div>
+                  </div>
                 </div></a>
                 <div class="skill-spell">
                   <div class="spell-badge">2</div>
@@ -832,12 +845,12 @@ export default {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css?family=Dosis:800');
+@import url('https://fonts.googleapis.com/css?family=Titillium+Web');
 body {
   background: black;
   min-height: 100vh;
   width: 100%;
-  font-family: dosis;
+font-family: 'Titillium Web', sans-serif;
 }
 .flex-centered {
   display: flex;
@@ -931,7 +944,6 @@ body {
     top: 0;
 }
 .monster-name {
-    font-family: dosis;
     color: white;
     font-size: 2em;
     left: 1em;
@@ -1158,17 +1170,25 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     display: flex;
     flex-wrap: wrap;
 }
+.spell-tool-cooldown {
+    color: #fc3da0;
+}
+.pink-text {
+    color: aqua;
+}
 .stat-tab {
     display: flex;
     width: 48%;
     height: 2em;
     margin: 1%;
-    font-family: dosis;
     font-weight: bold;
     font-size: 1.8em;
     color: white;
     text-shadow: 2px 2px black;
     line-height: 2;
+}
+.spell-tool-name {
+    color: white;
 }
 .skill-container {
     display: flex;
@@ -1176,6 +1196,34 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     background: #303852;
     border-radius: 4px;
     box-shadow: 1px 1px 0 rgb(74, 88, 133) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+}
+.spell-tool-info {
+    margin-top: 0.5em;
+}
+.spell-tool-header {
+    font-weight: bold;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.5em;
+    border-bottom: solid 1px #131725;
+}
+.tool-tip {
+    z-index: 999;
+    position: absolute;
+    bottom: 106%;
+    left: 0;
+    display: none;
+    padding: 0.8em;
+    font-size: 0.8em;
+    color: #008eb1;
+    background: #181d2d;
+    box-shadow: 1px 1px 0 rgb(36, 43, 68) inset;
+    min-width: 200px;
+    flex-direction: column;
+}
+.skill-spell:hover .tool-tip {
+  display: flex;
 }
 #demo {
     position: absolute;
@@ -1298,7 +1346,6 @@ canvas#hit-numbers {
 }
 .hit-number-text {
   z-index: 88;
-    font-family: dosis;
     font-size: 3em;
     color: white;
     position: absolute;
@@ -1567,7 +1614,6 @@ img.buy-icon {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-family: dosis;
     font-weight: bold;
     font-size: 1.8em;
     color: white;
@@ -1593,7 +1639,6 @@ img.buy-icon {
     color: #FFF;
     text-decoration: none;
     line-height: 43px;
-    font-family: 'dosis';
     display: flex;
     flex-direction: column;
     align-items: center;
