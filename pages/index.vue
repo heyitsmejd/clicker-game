@@ -1,10 +1,27 @@
 <template>
-    <div class="flex-centered">
-      <div class="user-area">
-        <input type="text" v-model="username">
-        <input type="password" v-model="password">
-        <button @click="logIn()">Log in</button>
+    <div class="flex-centered" v-if="!loggedIn">
+      <div class="preload"></div>
+      <div class="login-screen" >
+        <div class="game-menu">
+          <div class="game-logo">
+          </div>
+          <div class="user-area">
+            <div v-if="loadingDone">
+              <input class="login-input" type="text" v-model="username">
+              <input class="login-input"type="password" v-model="password">
+              <button class="login-button" @click="logIn()">Log in</button>
+            </div>
+            <div v-else>
+              <div class="loading-bar">
+                <div class="loading-text">Loading.. Please Wait</div>
+                <div class="loading-bar-fill" :style="{ 'width' : `${loadingPercent}%`}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="flex-centered" v-else>
       <div class="game-area">
         <div class="game-modal" v-if="viewModal">
           <div class="game-modal-bg" ></div>
@@ -191,13 +208,17 @@ export default {
   components: {
     Logo
   },
+  beforeMount() {
+    let img = []
+    var imgList = ['loadingbg.jpg', 'logo.png']
+    for(var x = 0; x < imgList.length; x++)
+      {
+        img[x] = new Image();
+        img[x].src = imgList[x]          
+      }    
+  },
   mounted() {
-    this.changeMonster()
-    //start auto DPS..
-    var self = this
-    setTimeout(() => self.dealAutoDamage(), 1500)
-    this.updateDmgPos()
-    this.checkAchievements()
+   this.preloadImg();
     document.onkeydown = function(e){
         e = e || window.event;
         var key = e.which || e.keyCode;
@@ -206,10 +227,29 @@ export default {
         }
     }
     this.socket.on('ATTACK', data => {
+      console.log(data)
       this.monsterCurrentHP = this.monsterCurrentHP - data.amount;
     })
     this.socket.on('GOLD', data => {
-      this.goldCount = this.goldCount + data.goldAmount
+      console.log(data)
+      this.goldCount = data.goldCount
+    })
+    this.socket.on('LOGIN', data => {
+      this.loggedIn = true;
+      console.log(data)
+      this.goldCount = data.gold
+      this.level = data.level
+      this.monsterCount = data.monsterCount
+      var self = this
+     setTimeout(() => self.changeMonster(), 100)
+      setTimeout(() => self.dealAutoDamage(), 1500)
+      this.updateDmgPos()
+      this.checkAchievements()
+      })
+    this.socket.on('LEVEL-CHANGE', data => {
+      console.log(data)
+      this.level = data.level
+      console.log(data)
     })
   },
   computed: {
@@ -230,6 +270,9 @@ export default {
   },
   data() {
     return {
+      loggedIn: false,
+      imageList: ['testbg2.jpg','level2.jpg','testbg.jpg','bluebug.svg','redbug.svg','slug.svg','heroes/luna-head.jpg','heroes/suyeon-head.jpg','heroes/yukki-head.jpg','heroes/mikon-head.jpg','heroes/fate-head.jpg','heroes/albedo-head.jpg',"logo.png","icons/spells/rapid.png",'icons/sword.png','gem.svg','coin.svg','hit.svg',"heroestab.svg","achtab.svg",'bluebug.svg','redbug.svg','slug.svg'
+      ],
       username: '',
       password: '',
       socket: io('localhost:3001'),
@@ -266,7 +309,7 @@ export default {
       clickCount: 0,
       clicksPerSecond: 0,
       dps: 0,
-      dpc: 1,
+      dpc: 27,
       levelRate: 1,
       isBossLevel: false,
       bossKilled: false,
@@ -380,15 +423,39 @@ export default {
         baseDps: 28334,
         bought: false,
         cost: 28234 },
-      ]
+      ],
+      loadingPercent: 0,
+      loadingDone: false,
+      currentImage: 0,
+      preloadImagesObj: []
     }
   },
   methods: {
+    preloadImg(){
+      var self = this
+      if(this.currentImage == this.imageList.length){
+        this.loadingDone = true;
+      }
+      else {
+        setTimeout(() => {
+          this.preloadImagesObj[self.currentImage] = new Image();
+          this.preloadImagesObj[self.currentImage].src = self.imageList[self.currentImage]
+          this.preloadImagesObj[self.currentImage].onload = function(){ 
+          console.log(self.loadingPercent)
+          self.loadingPercent = self.loadingPercent + percentInc;
+          self.currentImage++;  
+          self.preloadImg();      
+          }
+        }, 50)
+      }
+      var percentInc = 100 / this.imageList.length        
+    },
     logIn(){
         var self = this;
           this.$axios.$post(`http://localhost:3001/login`, { username : self.username, password : self.password})
           .then((res) => {
             console.log(res)
+
           }).catch(e => {
             console.log(e)
           //  console.log(e)
@@ -524,13 +591,17 @@ export default {
       }
     },
     checkNextLevel(){;
-      if(this.monsterCount < (this.monsterMaxCount + 1)) { this.monsterCount++; }
-      if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1; }
+
+      if(this.monsterCount < (this.monsterMaxCount + 1)){ this.monsterCount++; }
+      if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1;
+              this.socket.emit('LEVEL-CHANGE', {
+        }) }
       if(this.bossKilled)
       {
         this.bossKilled = false;
         this.monsterCount = 1;
-        this.level++
+        this.socket.emit('LEVEL-CHANGE', {
+        })
       var levelBg = this.maps.find(i => {
         return i.levelMin <= this.level && i.levelMax >= this.level
       })
@@ -880,7 +951,7 @@ export default {
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css?family=Titillium+Web');
+/*@import url('https://fonts.googleapis.com/css?family=Titillium+Web');*/
 body {
   background: black;
   min-height: 100vh;
@@ -984,6 +1055,63 @@ font-family: 'Titillium Web', sans-serif;
     left: 1em;
     z-index: 99;
     text-shadow: 2px 2px black;
+}
+.loading-bar {
+    background: #0e2030;
+    border-radius: 3em;
+    border: solid 2px #d1507c;
+    color: white;
+    width: 100%;
+    height: 2.5em;
+    margin-bottom: 1em;
+    position: relative;
+    overflow: hidden;
+}
+.loading-bar-fill {
+    background: #505ec6;
+    height: 100%;
+    border-radius: 1em;
+    transition: width 0.25s ease-in;
+}
+.loading-text {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.preload{
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+.login-screen {
+    width: 1024px;
+    height: 640px;
+    width: 1024px;
+    min-width: 1024px;
+    height: 640px;
+    min-height: 640px;
+    background: grey;
+    position: relative;
+    overflow: hidden;
+    background-image: URL('loadingbg.jpg');
+    background-size: cover;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+}
+.game-menu {
+    flex-direction: column;
+    display: flex;
+    width: 50%;
+    height: 50%;
+    justify-content: center;
+    align-items: center;
 }
 .game-area {
     width: 1024px;
@@ -1302,9 +1430,37 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     box-shadow: 0 0 0 1px #5e698e;
     padding-bottom: 0;
 }
+.game-logo {
+    width: 100%;
+    height: 50%;
+    background-image: URL("logo.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-bottom: 1em;
+}
+button.login-button {
+    width: 100%;
+    background: #d1507c;
+    border: solid 2px #0e2030;
+    border-radius: 2em;
+    padding: 0.5em;
+    color: white;
+}
 .user-area {
-    position: absolute;
-    bottom: 5%;
+    display: flex;
+    width: 50%;
+    justify-content: center;
+    flex-direction: column;
+}
+.login-input {
+    background: #0e2030;
+    border-radius: 3em;
+    border: solid 2px #d1507c;
+    color: white;
+    width: 100%;
+    height: 2.5em;
+    margin-bottom: 1em;
+    padding: 1em;
 }
 .health-anim-slow {
   transition: width 0.5s ease-in-out;
