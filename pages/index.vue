@@ -23,6 +23,22 @@
     </div>
     <div class="flex-centered" v-else>
       <div class="game-area">
+        <div class="game-modal" v-if="disconnected">
+          <div class="game-modal-bg" ></div>
+          <div class="game-modal-content">
+            <div class="game-modal-header">
+              <div class="game-modal-text">You've been disconnected.</div>
+            </div>
+            <div class="modal-pop-content">
+              <div>Please reload the page</div>
+              <div> 
+                        <a class="push_button blue" @click="location.reload()">
+                              RELOAD
+                        </a>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="game-modal" v-if="viewModal">
           <div class="game-modal-bg" ></div>
           <div class="game-modal-content">
@@ -77,7 +93,39 @@
                 </div>  
                 <div class="left-panel-body">
                 <div class="character-list"> 
-                  <div class="char-slot-bg" v-for="(character, index) in availableCharacters" :class="{ disabled : character.disabled }">
+                  <div class="char-slot-bg" v-if="availableNext.name != null">
+                    <div class="character" >
+                    <div class="character-left">
+                      <div class="char-img">
+                          <div class="char-portrait" :style="{'background-image' : `url('heroes/${availableNext.headImg}')`}"></div>                        
+                      </div>
+                    </div>
+                    <div class="char-info">
+                      <div class="char-info-header">
+                        <div class="char-dps">DPS: {{formatNumber(availableNext.dps)}}  LVL: {{availableNext.level}}</div>
+                        <div class="char-name">{{availableNext.name}}</div>
+                      </div>
+                      <div class="char-info-body">
+                        <div class="char-spells">
+                          <div class="char-spell-icon">
+                          </div>
+                          <div class="char-spell-icon">
+                          </div>
+                          <div class="char-spell-icon">
+                          </div>
+                        </div>
+                        <div class="char-cost">
+                        <a class="push_button blue" @click="buyCharacter(availableNext.name)">
+
+                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(availableNext.cost)}}</span></div>
+                          <div class="char-hire-button"  >HIRE</div>
+                        </a>
+                      </div>
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                  <div class="char-slot-bg" v-for="(character, index) in availableCharacters">
                     <div class="character" v-if="character.name != null">
                     <div class="character-left">
                       <div class="char-img">
@@ -98,14 +146,8 @@
                           <div class="char-spell-icon">
                           </div>
                         </div>
-                                              <div class="char-cost">
-                        <a class="push_button blue" v-if="!character.bought" @click="buyCharacter(character.name)">
-
-                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(character.cost)}}</span></div>
-                          <div class="char-hire-button"  >HIRE</div>
-                        </a>
-                        <a class="push_button purple" v-else @click="levelCharacter(character.name)">
-
+                        <div class="char-cost">
+                        <a class="push_button purple" @click="levelCharacter(character.name)">
                           <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
                           <div class="char-hire-button">LEVEL UP</div>
                         </a>
@@ -143,6 +185,9 @@
               </div>
               <div class="level-monster-count" v-if="!isBossLevel">
                 {{monsterCount}}/{{monsterMaxCount}}
+              </div>
+              <div class="level-monster-count" id="boss-timer" v-else>
+                
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
@@ -219,6 +264,7 @@ export default {
   },
   mounted() {
    this.preloadImg();
+   var self = this
     document.onkeydown = function(e){
         e = e || window.event;
         var key = e.which || e.keyCode;
@@ -226,13 +272,61 @@ export default {
             self.specialRapidClick(25);
         }
     }
+    this.socket.on('SocketId', data => {
+      this.mySocket = data.socketId
+    })
+    this.socket.on('BUY-CHAR', data => {
+      this.boughtHero = data.bought
+      this.nextHero = data.next
+      this.goldCount = data.gold
+      this.dps = data.dps
+    })
+    if(this.loggedIn)
+    {
+      this.socket.on('disconnect', data => {
+        console.log('please relog')
+        this.disconnected = true;
+      })
+    }
+    this.socket.on('BOSS-START', data => {
+
+    })
     this.socket.on('ATTACK', data => {
-      console.log(data)
+      // console.log(data)
       this.monsterCurrentHP = this.monsterCurrentHP - data.amount;
+      // if(this.monster)
     })
     this.socket.on('GOLD', data => {
-      console.log(data)
+      var self = this
+      this.monsterCount = data.monsterCount,
       this.goldCount = data.goldCount
+      this.isBossLevel = data.isBoss
+      if(this.isBossLevel){
+        setTimeout(() => {
+          self.socket.emit('LEVEL-CHANGE', { socketId: self.mySocket, monsterCount: 1 }) 
+        }, 1500)
+        
+        console.log('boss killed!')
+      }
+      if(this.monsterCount == 11) {
+        this.monsterCount = 10
+        setTimeout(() => {
+          self.socket.emit('LEVEL-CHANGE', { socketId: self.mySocket, monsterCount: 11 }) 
+        }, 1500)
+
+      }
+
+    })
+    this.socket.on('KILL-MONSTER', data => {
+
+    })
+    this.socket.on('BOSS-END', data => {
+      this.level = data.level
+      this.monsterCount = data.monsterCount
+      this.isBossLevel = data.bossFight
+    })
+    this.socket.on('READY', data => {
+        this.isAttackable = data.canAttack
     })
     this.socket.on('LOGIN', data => {
       this.loggedIn = true;
@@ -240,29 +334,30 @@ export default {
       this.goldCount = data.gold
       this.level = data.level
       this.monsterCount = data.monsterCount
+      this.boughtHero = data.heroes
+      this.nextHero = data.nextHero
       var self = this
-     setTimeout(() => self.changeMonster(), 100)
+      setTimeout(() => self.getNewMonster(), 20)
       setTimeout(() => self.dealAutoDamage(), 1500)
       this.updateDmgPos()
       this.checkAchievements()
       })
     this.socket.on('LEVEL-CHANGE', data => {
+      console.log('THE CURRENT LEVEL IS : ' + this.level + " WE SHOULD GO TO ONE MORE : " + (this.level + 1))
       console.log(data)
+      this.goldCount = data.goldCount
+      this.monsterCount = 1
       this.level = data.level
-      console.log(data)
+      this.isBossLevel = data.bossFight
+      self.getNewMonster()
     })
   },
   computed: {
     availableCharacters: function() { 
-      var character = this.characters;
-      var bought = character.filter(i => i.bought)
-      if(bought.length == character.length)
-      {
-        return bought.reverse()
-      }
-      var nextChar = character.find((char, index) => char.bought == false)
-      var returned = bought.concat(nextChar)
-      return returned.reverse()
+      return this.boughtHero.reverse()
+    },
+    availableNext: function() { 
+      return this.nextHero
     },
     currentLevelRate: function(){
       return this.levelRate
@@ -270,12 +365,17 @@ export default {
   },
   data() {
     return {
+      boughtHero: [],
+      nextHero: [],
       loggedIn: false,
-      imageList: ['testbg2.jpg','level2.jpg','testbg.jpg','bluebug.svg','redbug.svg','slug.svg','heroes/luna-head.jpg','heroes/suyeon-head.jpg','heroes/yukki-head.jpg','heroes/mikon-head.jpg','heroes/fate-head.jpg','heroes/albedo-head.jpg',"logo.png","icons/spells/rapid.png",'icons/sword.png','gem.svg','coin.svg','hit.svg',"heroestab.svg","achtab.svg",'bluebug.svg','redbug.svg','slug.svg'
+      mySocket: '',
+      imageList: ['testbg2.jpg','level2.jpg','testbg.jpg','demongirl.png','redbug.svg','slug.svg','heroes/luna-head.jpg','heroes/suyeon-head.jpg','heroes/yukki-head.jpg','heroes/mikon-head.jpg','heroes/fate-head.jpg','heroes/albedo-head.jpg',"logo.png","icons/spells/rapid.png",'icons/sword.png','gem.svg','coin.svg','hit.svg',"heroestab.svg","achtab.svg",'bluebug.svg','redbug.svg','slug.svg'
       ],
       username: '',
       password: '',
-      socket: io('localhost:3001'),
+      bossTimer: false,
+      bossTime: '',
+      socket: io('127.0.0.1:3001'),
       user: '',
       viewModal: false,
       modalHeader: '',
@@ -309,15 +409,16 @@ export default {
       clickCount: 0,
       clicksPerSecond: 0,
       dps: 0,
-      dpc: 27,
+      dpc: 250,
       levelRate: 1,
       isBossLevel: false,
       bossKilled: false,
-      isAttackable: false,
+      isAttackable: true,
       monsterOrder: -1,
       monsterCurrentHP: '',
       monsterMaxHP: '',
       image: '',
+      disconnected: false,
       monsterName: '',
       goldCount: 0,
       goldBonus: 100,
@@ -348,9 +449,9 @@ export default {
          image: 'testbg.jpg'
       },],
       monsters: [{
-        image: 'bluebug.svg',
+        image: 'demongirl.png',
         monsterMaxHP: 1,
-        monsterName: 'Dangerous Boop'
+        monsterName: 'Dangerous Demongirl'
       },{
         image: 'redbug.svg',
         monsterMaxHP: 1,
@@ -370,8 +471,6 @@ export default {
         level: 1,
         baseDps: 1,
         baseCost: 10,
-        disabled: false,
-        bought: false,
         cost: 10 },
       { name: 'Suyeon',
         fullImg: 'suyeon.jpg',
@@ -380,8 +479,6 @@ export default {
         level: 1,
         baseDps: 5,
         baseCost: 49,
-        bought: false,
-        disabled: true,
         cost: 49 },
       { name: 'Yukki',
         fullImg: 'yukki.jpg',
@@ -389,29 +486,23 @@ export default {
         dps: 19,
         level: 1,
         baseDps: 19,
-        bought: false,
         baseCost: 240,
-        disabled: true,
         cost: 240 },
       { name: 'Mikon',
         fullImg: 'mikon.jpg',
         headImg: 'mikon-head.jpg',
         dps: 70,
         level: 1,
-        bought: false,
         baseDps: 70,
         baseCost: 1176,
-        disabled: true,
         cost: 1176 },
       { name: 'Fate',
         fullImg: 'fate.jpg',
         headImg: 'fate-head.jpg',
         dps: 257,
         level: 1,
-        bought: false,
         baseDps: 257,
         baseCost: 5762,
-        disabled: true,
         cost: 5762 },
       { name: 'Albedo',
         fullImg: 'albedo.jpg',
@@ -419,9 +510,7 @@ export default {
         dps: 941,
         level: 1,
         baseCost: 28234,
-        disabled: true,
         baseDps: 28334,
-        bought: false,
         cost: 28234 },
       ],
       loadingPercent: 0,
@@ -441,25 +530,60 @@ export default {
           this.preloadImagesObj[self.currentImage] = new Image();
           this.preloadImagesObj[self.currentImage].src = self.imageList[self.currentImage]
           this.preloadImagesObj[self.currentImage].onload = function(){ 
-          console.log(self.loadingPercent)
+         // console.log(self.loadingPercent)
           self.loadingPercent = self.loadingPercent + percentInc;
           self.currentImage++;  
           self.preloadImg();      
           }
-        }, 50)
+        }, 1)
       }
       var percentInc = 100 / this.imageList.length        
     },
     logIn(){
         var self = this;
-          this.$axios.$post(`http://localhost:3001/login`, { username : self.username, password : self.password})
+        console.log(this.username)
+          this.$axios.$post(`http://127.0.0.1:3001/login`, { username : self.username, password : self.password})
           .then((res) => {
-            console.log(res)
+            console.log(res, this.username, this.username, 'LoL')
+
+                    this.socket.emit('CheckUser', {
+          user: this.username, socketId: this.mySocket
+        })
 
           }).catch(e => {
             console.log(e)
           //  console.log(e)
           })
+    },
+    startBossTimer(){
+      var self = this
+      console.log('starting 30 sec timer!')
+      var endTime = new Date(); 
+      endTime = new Date(endTime .getTime() + 30000);
+      var interval = setInterval(function() {
+          var now = new Date();
+          var distance = endTime - now;
+          if(distance < 0)
+          {
+            distance = 0
+          }
+          document.getElementById("boss-timer").innerHTML = (distance / 1000).toFixed(3);
+          if(self.monsterCurrentHP <= 0) {
+            document.getElementById("boss-timer").innerHTML = "";
+            clearInterval(interval)
+          }
+          if(now > endTime)
+          {
+            document.getElementById("boss-timer").innerHTML = "";
+            clearInterval(interval)
+            // self.isBossLevel = false;
+            console.log('boss round is over!!')
+            self.socket.emit('BOSS-END', {
+              bossHP: self.monsterCurrentHP,
+              bossKilled: self.bossKilled,
+            })
+          }
+      }, 10);
     },
     attack(e,special,ranX,ranY){
       if(this.monsterCurrentHP > 0 && this.isAttackable)
@@ -493,9 +617,11 @@ export default {
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
         this.socket.emit('DAMAGE', {
           user: this.user,
-          amount: this.dpc
+          amount: this.dpc,
+          monsterMaxHP: this.monsterMaxHP,
+          monsterCurrentHP: this.monsterCurrentHP,
+          socketId: this.mySocket
         })
-
         var self = this
         this.recentHits.push({"x": offsetX, "y": offsetY, "amount": this.dpc, "maxY" : offsetY - 60,
         'maxYHit' : false})
@@ -580,53 +706,39 @@ export default {
     },
 
     buyCharacter(charName){
-
-      var index = this.characters.findIndex( slot => slot.name == charName )
-      if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
-      {
-        this.characters[index].bought = true;
-        this.dps = this.dps + this.characters[index].dps
-        this.characters[index+1].disabled = false;
-        this.goldCount = this.goldCount -this.characters[index].cost;
-      }
+      this.socket.emit('BUY-CHAR', {
+        name : charName
+      })
+      // var index = this.characters.findIndex( slot => slot.name == charName )
+      // if(this.goldCount >= this.characters[index].cost && this.characters[index].bought != true)
+      // {
+      //   this.characters[index].bought = true;
+      //   this.dps = this.dps + this.characters[index].dps
+      //   this.characters[index+1].disabled = false;
+      //   this.goldCount = this.goldCount -this.characters[index].cost;
+      // }
     },
-    checkNextLevel(){;
-
-      if(this.monsterCount < (this.monsterMaxCount + 1)){ this.monsterCount++; }
-      if(this.monsterCount == (this.monsterMaxCount + 1)) { this.level++; this.monsterCount = 1;
-              this.socket.emit('LEVEL-CHANGE', {
-        }) }
-      if(this.bossKilled)
-      {
-        this.bossKilled = false;
-        this.monsterCount = 1;
-        this.socket.emit('LEVEL-CHANGE', {
-        })
+    checkNextLevel(){
       var levelBg = this.maps.find(i => {
         return i.levelMin <= this.level && i.levelMax >= this.level
       })
       document.getElementsByClassName('game-area')[0].style.backgroundImage = `url('${levelBg.image}')`
-      }
     },
     killMonster() {
       setTimeout(() => this.recentHits = [], 750)
       document.getElementById('monster-area').classList.remove('new-monster')
       document.getElementById('monster-area').classList.add('kill-monster')
-      //add some gold!
       this.socket.emit('KILL-MONSTER', {
           user: this.user,
           monsterHP: this.monsterMaxHP,
+          monsterCount: this.monsterCount,
+          socketId: this.mySocket,
+          isBoss: this.isBossLevel
       })
-      // this.goldCount = this.goldCount + Math.round(((this.monsterMaxHP / 15) * Math.floor(((this.goldBonus / 100) + 1))));
+      this.isAttackable = false;
       var self = this
-      if(this.isBossLevel)
+      if(!this.isBossLevel)
       {
-        this.isBossLevel = false;
-        this.bossKilled = true;
-        setTimeout(() => self.changeMonster(), 1500)
-
-      }
-      else {
         setTimeout(() => self.changeMonster(), 1500)
       }
     },
@@ -702,7 +814,6 @@ export default {
     changeMonster() {
       if(this.monsterDeath == true)
       {
-          this.checkNextLevel()
           this.getNewMonster()      
       }
     },
@@ -875,9 +986,9 @@ export default {
       this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
       this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
       this.image = this.monsters[this.monsterOrder].image
-      if(this.level % 5 === 0)
+      if(this.isBossLevel === true)
       {
-        this.isBossLevel = true;
+        this.startBossTimer()
         this.bossKilled = false;
         this.monsterName = this.bosses[0].monsterName
         this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
@@ -928,7 +1039,6 @@ export default {
       document.getElementById('monster-area').classList.remove('kill-monster')
       document.getElementById('monster-area').classList.add('new-monster')
       setTimeout(() => { 
-        self.isAttackable = true;
         document.getElementsByClassName('health')[0].classList.remove('health-anim-quick')
         document.getElementsByClassName('health')[0].classList.add('health-anim-slow')
       } , 500)
@@ -1340,16 +1450,20 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     color: aqua;
 }
 .stat-tab {
+    justify-content: center;
+    border-radius: 2em;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
+    border: solid 2px #75624a;
     display: flex;
-    width: 21%;
-    height: 2em;
+    width: 24%;
+    height: 3em;
     font-weight: bold;
     font-size: 1em;
     color: white;
     text-shadow: 2px 2px black;
-    line-height: 2;
-    margin: 0.5em;
-    background: #39415b;
+    background: #241000;
+    align-items: center;
 }
 .spell-tool-name {
     color: white;
@@ -1421,13 +1535,16 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     z-index: 1;
 }
 .left-panel-body {
+    box-shadow: inset 2px 0px #73655c;
     display: flex;
     width: 100%;
     flex-direction: column;
-    background: #3c4563;
+    background: #5d5149;
     height: 82.5%;
-    padding: 1em;
-    box-shadow: 0 0 0 1px #5e698e;
+    padding: 0.5em;
+    border: solid 1px black;
+    border-top: none;
+    border-bottom: none;
     padding-bottom: 0;
 }
 .game-logo {
@@ -1477,7 +1594,8 @@ canvas#hit-numbers {
     opacity: 1;
 }
 .left-small-menu {
-    background: #3c4563;
+  box-shadow: inset 2px 0px #73655c;
+    background: #5d5149;
     height: 3em;
     display: flex;
     padding: 0.5em;
@@ -1485,7 +1603,8 @@ canvas#hit-numbers {
     border-bottom-right-radius: 8px;
     width: 100%;
     padding-bottom: 1em;
-    box-shadow: 0px 1px 0 1px #5e698e;
+    border: solid 1px black;
+    border-top: none;
 }
 /*.level-option-button:before {
     content: ' ';
@@ -1496,21 +1615,19 @@ canvas#hit-numbers {
     border-radius: 6px;
 }*/
 .dark-blue {
-    text-shadow: -1px -1px 0 #323c5f;
-    background: #252e4a;
-    border: 1px solid #44517b;
-    background-image: linear-gradient(to bottom, #5c678c, #434c6a);
-    border-radius: 5px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #363e5a, 0 4px 2px rgba(0, 0, 0, .5);
+text-shadow: -1px -1px 0 #000000;
+    font-weight: bold;
+    background: #483e37;
+    background-image: linear-gradient(to bottom, #5d5149, #3a312b);
+    border: solid 2px #2b2522;
+    box-shadow: inset 2px 2px 0px 1px rgb(97, 82, 72), inset -2px -2px 1px 1px rgba(53, 45, 35, 0.74118);
+    height: 100%;
+    padding: 0.9em !important;
 }
 .dark-blue:hover {
-    color: #5ac2ff;
-    background-image: linear-gradient(to bottom, #434c6a,#5c678c);
+    color: #ffe041 !important;
 }
-.dark-blue:active {
-  background-image: linear-gradient(to bottom, #434c6a,#5c678c);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset;
-}
+
 .level-option-button {
     color: grey;
     font-weight: bold;
@@ -1528,7 +1645,7 @@ canvas#hit-numbers {
   color: #5ac2ff;
 }
 .is-active-option {
-    color: #34fef6 !important;
+    color: #ffe041 !important
 }
 .level-option-button:last-child {
     margin-right: 0 !important;
@@ -1560,7 +1677,8 @@ canvas#hit-numbers {
     opacity: 0;
     -webkit-animation: move-text 2s;
     animation: move-text 2s;
-    background: -webkit-linear-gradient(#ecad76, #ff4b4b);
+    font-weight: bolder;
+    background: -webkit-linear-gradient(#f3f5e9, #ebf5a9);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 1px black;
@@ -1576,7 +1694,7 @@ canvas#hit-numbers {
   15% {
                opacity: 1;
   }
-  30% {
+  40% {
     opacity: 0;
   }
   100% {
@@ -1607,10 +1725,12 @@ canvas#hit-numbers {
 .tab-menu-option {
     height: 100%;
     width: 25%;
-    background: #3c4563;
+    background: #5d5149;
     background-size: 50%;
     background-repeat: no-repeat;
-    box-shadow: 0 -1px 0 1px #5e698e;
+    border: solid 1px black;
+    border-bottom: none;
+    box-shadow: inset 2px 2px #73655c;
 }
 .tab-menu-option:first-child {
       border-top-left-radius: 8px;
@@ -1628,7 +1748,7 @@ canvas#hit-numbers {
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-  background-color: #2a3148;
+  background-color: #483f39;
   height: 40px;
 }
 
@@ -1643,7 +1763,7 @@ canvas#hit-numbers {
 ::-webkit-scrollbar-thumb
 {
   height: 20px;
-  background-color: #52608e;
+  background-color: #a09476;
   border-radius: 4px;
   margin-right: 1em;
 }
@@ -1657,7 +1777,7 @@ canvas#hit-numbers {
 }
 .character-left {
     top: 1px;
-        z-index: 5;
+    z-index: 5;
     height: calc(100% - 2px);
     left: -3em;
     display: flex;
@@ -1668,13 +1788,12 @@ canvas#hit-numbers {
     background: red;
     border-radius: 50%;
     overflow: hidden;
-    box-shadow: 0px 0px 0 2px #8183bf;
+    box-shadow: 0px 0px 0 2px #1b1715;
 }
 .char-dps {
     justify-content: flex-end;
     display: flex;
-    width: 100%;
-    color: #4dc4e0;
+    width: 94%;
 }
 .pink {
     background: linear-gradient(rgb(241, 8, 255),rgb(171, 22, 247)) !important;
@@ -1746,13 +1865,13 @@ canvas#hit-numbers {
 .character-list {
     display: flex;
     flex-wrap: wrap;
-    background: #303852;
+    background: #3a312b;
     height: 100%;
     align-content: flex-start;
-    justify-content: center;
     overflow-y: scroll;
+    justify-content: center;
     padding: 0.5em;
-    border: solid 1px #525f8a;
+    border: solid 1px #211d1a;
 }
 .disabled {
     filter: grayscale(100%);
@@ -1763,7 +1882,7 @@ canvas#hit-numbers {
     padding-bottom: 0;
     line-height: 2em;
 }
-.character:before {
+/*.character:before {
     position: absolute;
     left: 0;
     top: 0;
@@ -1774,7 +1893,7 @@ canvas#hit-numbers {
     border-bottom-right-radius: 8px;
     width: 100%;
     height: 100%;
-}
+}*/
 .char-hire-button {
     width: 100%;
     display: flex;
@@ -1789,13 +1908,12 @@ canvas#hit-numbers {
     background-size: cover;
     background-position: center;
     border-radius: 6px;
-    box-shadow: inset 1px 1px 20px 17px rgba(0, 0, 0, 0.35), 0px 0px 0px 2px rgba(0, 0, 0, 0.35);
 }
 .char-spell-icon {
     width: 2em;
     height: 2em;
     border-radius: 4px;
-    border: solid 1px #2a3147;
+    border: solid 2px #2a3147;
     background: URL("icons/spells/rapid.png");
     background-size: cover;
     -webkit-filter: grayscale(100%);
@@ -1814,16 +1932,22 @@ canvas#hit-numbers {
     width: 100%;
     height: 2em;
     border-top-right-radius: 8px;
-    background: #4c4e88;
+    background: #b79a56;
     align-items: center;
+    border: solid 2px black;
+    border-bottom: none;
+    color: white;
+    font-weight: bold;
 }
 .char-info-body {
     height: 4em;
     width: 100%;
     border-bottom-right-radius: 8px;
-    background: #414273;
+    background: #93672d;
     flex-direction: row;
     display: flex;
+    border: solid 2px #1b1715;
+    border-top: none;
 }
 .char-info {
     width: 100%;
@@ -1850,8 +1974,9 @@ canvas#hit-numbers {
     margin-right: 4px;
 }
 .inactive-tab {
-    border-bottom: solid 1px #303852;
-    background: #303958;
+    box-shadow: inset 0px 2px #63564e;
+    border-bottom: solid 1px #382e28;
+    background: #483f39;
 }
 .menu-option {
     z-index: 5;
@@ -1895,19 +2020,30 @@ img.buy-icon {
     text-shadow: 2px 2px black;
 }
 .purple {
-    text-shadow: -1px -1px 0 #784698;
-    background: #984cc5;
-    border: 1px solid #4e2958;
-    background-image: linear-gradient(to bottom, #dd48e6, #904fab);
-    border-radius: 5px;
-    box-shadow: 0 1px 0 rgba(252, 231, 255, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #492a54, 0 4px 2px rgba(0, 0, 0, .5);
+    margin-top: 4px;
+    text-shadow: -1px -1px 0 #3a94d4;
+    background: #008ec7;
+    background-image: linear-gradient(to bottom, #00c7c7, #00a0ab);
+    border-radius: 2px;
+    border: solid 2px #2b2522;
+    box-shadow: inset 2px 2px 0px 1px rgba(106, 219, 230, 0.36863), inset -2px -2px 1px 1px rgba(39, 60, 62, 0.74118);
+}
+.purple:hover {
+    margin-top: 4px;
+    text-shadow: -1px -1px 0 #3a94d4;
+    background: #008ec7;
+    background-image: linear-gradient(to bottom, #0fd6d6, #0caeb9);
+    border-radius: 2px;
+    border: solid 2px #2b2522;
+    box-shadow: inset 2px 2px 0px 1px rgba(122, 228, 239, 0.36863), inset -2px -2px 1px 1px rgba(68, 102, 105, 0.74118);
 }
 .bonus {
   color: aqua;
 }
 .push_button {
     position: relative;
-    max-height: 2em;
+    max-height: 3em;
+    border-radius: 8px !important;
     width: 127px;
     padding-left: 1em;
     padding-right: 1em;
@@ -1922,32 +2058,33 @@ img.buy-icon {
     margin-right: 1em;
 }
 .blue {
+    margin-top: 4px;
     text-shadow: -1px -1px 0 #3a94d4;
-    background: #48b7c3;
-    border: 1px solid #3a86a9;
-    background-image: linear-gradient(to bottom, #53c8e2, #238bb3);
-    border-radius: 5px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #206179, 0 4px 2px rgba(0, 0, 0, .5);
+    background: #45c700;
+    background-image: linear-gradient(to bottom, #45c700, #3bab00);
+    border-radius: 2px;
+    border: solid 2px #2b2522;
+    box-shadow: inset 2px 2px 0px 1px #95e66a5e, inset -2px -2px 1px 1px #2f3e27bd;
 }
 .push_button:hover {
   color: white !important;
 }
 
 .blue:hover {
-  background-image: linear-gradient(to bottom, #238bb3, #53c8e2);
-  color: white;
+    background: #49d001;
+    background-image: linear-gradient(to bottom, #4dd007, #43b507);
+    border-radius: 2px;
+    border: solid 2px #2b2522;
+    box-shadow: inset 2px 2px 0px 1px rgba(154, 230, 114, 0.36863), inset -2px -2px 1px 1px rgba(80, 103, 68, 0.74118);
 }
 .push_button:active {
-      -webkit-box-shadow:0 1px 0 rgba(255, 255, 255, .5) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset;
-    top:2px;
+
 }
 .push_button:active:before{
-    top: -11px;
-    bottom: -5px;
-    content: "";
+
 }
 .blue:active {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset;
+
 }
 @media only screen and (max-width: 600px) {
   body {
