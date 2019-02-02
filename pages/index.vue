@@ -52,142 +52,231 @@
             </div>
           </div>
         </div>
+        <div class="game-modal" v-if="dropModal">
+          <div class="game-modal-bg" ></div>
+          <div class="game-modal-content">
+            <div class="game-modal-header">
+              <div class="game-modal-text">You've obtained an item!</div>
+              <div class="game-modal-close" @click="dropModal = !dropModal">X</div>
+            </div>
+            <div class="modal-pop-content">
+                      <div class="inventory-container">
+                          <div class="inventory-slot" v-for="item in itemDrops" :style="{ 'background-image' : `URL('icons/items/${item.icon}')`}" @click="equipItem(item.itemType,item.id)">
+                            <div class="inventory-slot-tooltip">
+                              {{item.name}}
+                            </div>
+                          </div>
+                      </div>
+            </div>
+          </div>
+        </div>
+        <div class="special-attack">
+          <div class="background"></div>
+          <div class="character-face"></div>
+           <div class="special-text"></div>
+        </div>
           <div class="left">
               <div class="left-panel">
                 <div class="stats-area">
                 <div class="gold-stat stat-tab">
-                  {{formatNumber(goldCount)}}
+                  <div class="gold-coin"></div>
+                  <span class="big-stat-text">{{formatNumber(goldCount)}}</span>
                 </div>
                 <div class="gem-stat stat-tab">
-                  {{ formatNumber(gemCount)}}
+                  <div class="gem-icon"></div>
+                  <span class="big-stat-text">{{ formatNumber(gemCount)}}</span>
                 </div>
-                <div class="click-stat stat-tab">
+<!--                 <div class="click-stat stat-tab">
                  DPC: {{formatNumber(dpc)}}
                 </div>
                 <div class="dps-stat stat-tab">
                   DPS: {{formatNumber(dps)}}
-                </div>
+                </div> -->
               </div>
                 <div class="left-panel-content">
                 <div class="left-big-menu">
-                  <div class="tab-menu-option">
+                  <a class="tab-menu-option " @click="changeTab(0)" :class="{ 'inactive-tab' : currentTab != 0 }">
                     <div class="menu-option-content">
-                      <img class="menu-icon" src="heroestab.svg">
+                      <div>Heroes</div>
                     </div>
-                  </div>
-                  <div class="tab-menu-option inactive-tab">
+                  </a>
+                  <a class="tab-menu-option " @click="changeTab(1)" :class="{ 'inactive-tab' : currentTab != 1 }">
                    <div class="menu-option-content">
-                      <img class="menu-icon" src="achtab.svg">
+                      <div>Inventory</div>
                     </div>
-                  </div>
-                  <div class="tab-menu-option inactive-tab">
+                  </a>
+                  <a class="tab-menu-option " @click="changeTab(2)" :class="{ 'inactive-tab' : currentTab != 2 }">
                     <div class="menu-option-content">
-                      <div>Achievements</div>
+                      <div>Divine</div>
                     </div>
-                  </div>
-                  <div class="tab-menu-option inactive-tab">
+                  </a>
+                  <a class="tab-menu-option " @click="changeTab(3)" :class="{ 'inactive-tab' : currentTab != 3 }">
                    <div class="menu-option-content">
-                      <div>Stats</div>
+                      <div>Skills</div>
                     </div>
-                  </div>
+                  </a>
                 </div>  
                 <div class="left-panel-body">
-                <div class="character-list"> 
-                  <div class="char-slot-bg" v-if="availableNext.name != null">
-                    <div class="character" >
-                    <div class="character-left">
-                      <div class="char-img">
-                          <div class="char-portrait" :style="{'background-image' : `url('heroes/${availableNext.headImg}')`}"></div>                        
-                      </div>
-                    </div>
-                    <div class="char-info">
-                      <div class="char-info-header">
-                        <div class="char-dps">DPS: {{formatNumber(availableNext.dps)}}  LVL: {{availableNext.level}}</div>
-                        <div class="char-name">{{availableNext.name}}</div>
-                      </div>
-                      <div class="char-info-body">
-                        <div class="char-spells">
-                          <div class="char-spell-icon">
-                          </div>
-                          <div class="char-spell-icon">
-                          </div>
-                          <div class="char-spell-icon">
-                          </div>
+                  <div class="heroes-tab" v-if="currentTab == 0">
+                  <div class="character-list" > 
+                    <div class="char-slot-bg" v-if="availableNext.name != null">
+                      <div class="character" >
+                      <div class="character-left">
+                        <div class="char-img">
+                            <div class="char-portrait" :style="{'background-image' : `url('heroes/${availableNext.headImg}')`}"></div>                        
                         </div>
-                        <div class="char-cost">
-                        <a class="push_button blue" @click="buyCharacter(availableNext.name)">
+                      </div>
+                      <div class="char-info">
+                        <div class="char-info-header">
+                          <div class="char-dps">DPS: {{formatNumber(availableNext.dps)}}  LVL: {{availableNext.level}}</div>
+                          <div class="char-name">{{availableNext.name}}</div>
+                        </div>
+                        <div class="char-info-body">
+                          <div class="char-spells">
+                            <div class="char-spell-icon">
+                            </div>
+                            <div class="char-spell-icon">
+                            </div>
+                            <div class="char-spell-icon">
+                            </div>
+                          </div>
+                          <div class="char-cost">
+                          <a class="push_button blue" @click="buyCharacter(availableNext.name)">
 
-                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(availableNext.cost)}}</span></div>
-                          <div class="char-hire-button"  >HIRE</div>
-                        </a>
-                      </div>
-                      </div>
-                    </div>
-                    </div>
-                  </div>
-                  <div class="char-slot-bg" v-for="(character, index) in availableCharacters">
-                    <div class="character" v-if="character.name != null">
-                    <div class="character-left">
-                      <div class="char-img">
-                          <div class="char-portrait" :style="{'background-image' : `url('heroes/${character.headImg}')`}"></div>                        
-                      </div>
-                    </div>
-                    <div class="char-info">
-                      <div class="char-info-header">
-                        <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
-                        <div class="char-name">{{character.name}}</div>
-                      </div>
-                      <div class="char-info-body">
-                        <div class="char-spells">
-                          <div class="char-spell-icon">
-                          </div>
-                          <div class="char-spell-icon">
-                          </div>
-                          <div class="char-spell-icon">
-                          </div>
+                            <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(availableNext.cost)}}</span></div>
+                            <div class="char-hire-button"  >HIRE</div>
+                          </a>
                         </div>
-                        <div class="char-cost">
-                        <a class="push_button purple" @click="levelCharacter(character.name)">
-                          <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
-                          <div class="char-hire-button">LEVEL UP</div>
-                        </a>
+                        </div>
                       </div>
                       </div>
                     </div>
+                    <div class="char-slot-bg" v-for="(character, index) in availableCharacters">
+                      <div class="character" v-if="character.name != null">
+                      <div class="character-left">
+                        <div class="char-img">
+                            <div class="char-portrait" :style="{'background-image' : `url('heroes/${character.headImg}')`}"></div>                        
+                        </div>
+                      </div>
+                      <div class="char-info">
+                        <div class="char-info-header">
+                          <div class="char-dps">DPS: {{formatNumber(character.dps)}}  LVL: {{character.level}}</div>
+                          <div class="char-name">{{character.name}}</div>
+                        </div>
+                        <div class="char-info-body">
+                          <div class="char-spells">
+                            <div class="char-spell-icon">
+                            </div>
+                            <div class="char-spell-icon">
+                            </div>
+                            <div class="char-spell-icon">
+                            </div>
+                          </div>
+                          <div class="char-cost">
+                          <a class="push_button purple" @click="levelCharacter(character.name)">
+                            <div class="char-amount-gold"><span class="purchase-amt-text">{{formatNumber(getLevelCost(character.name))}}</span></div>
+                            <div class="char-hire-button">LVL UP</div>
+                          </a>
+                        </div>
+                        </div>
+                      </div>
+                      </div>
                     </div>
                   </div>
-                </div>                  
-                </div>
-                <div class="left-small-menu">
-                    <a class="push_button dark-blue" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
+                                    <div class="left-small-menu">
+                    <a class="push_button dark-blue sm-btn-margin" @click="setLevelRate(1)" :class="{ 'is-active-option' : currentLevelRate == 1 }">
                       1x
                     </a>
-                    <a  class="push_button dark-blue" @click="setLevelRate(10)" :class="{ 'is-active-option' : currentLevelRate == 10 }">
+                    <a  class="push_button dark-blue sm-btn-margin" @click="setLevelRate(10)" :class="{ 'is-active-option' : currentLevelRate == 10 }">
                       10x
                     </a>
-                    <a class="push_button dark-blue" @click="setLevelRate(25)" :class="{ 'is-active-option' : currentLevelRate == 25 }">
+                    <a class="push_button dark-blue sm-btn-margin" @click="setLevelRate(25)" :class="{ 'is-active-option' : currentLevelRate == 25 }">
                       25x
                     </a>
-                    <a class="push_button dark-blue" @click="setLevelRate(100)" :class="{ 'is-active-option' : currentLevelRate == 100 }">
+                    <a class="push_button dark-blue sm-btn-margin" @click="setLevelRate(100)" :class="{ 'is-active-option' : currentLevelRate == 100 }">
                       100x
                     </a>
                 </div> 
+                  </div>  
+                  <div class="inventory-tab" v-if="currentTab == 1"> 
+                      <div class="inventory-head">Equipped Items</div>
+                      <div class="equipment-container">
+                        
+                        <div class="equipment-slot">
+                          <div>Weapon</div>
+                          <div class="equipment-icon" :style="{ 'background-image' : `URL('icons/items/${equippedWeapon.icon}')`}">
+                                                      <div class="inventory-slot-tooltip" v-if="equippedWeapon.name">
+                              <div class="item-name">{{equippedWeapon.name}}</div>
+                              <div class="item-description"> Increases DPC by {{equippedWeapon.bonusAmount}}</div>
+                            </div>
+                          </div>
+                          <div v-if="equippedWeapon.bonusAmount > 0">+{{equippedWeapon.bonusAmount}} DPC</div>
+                          <div v-else>+0 DPC</div>
+                        </div>
+                        <div class="equipment-slot">
+                          <div>Amulet</div>  
+                          <div class="equipment-icon">
+                            
+                          </div>
+                          <div>+0% Crit</div>                    
+                        </div>
+                        <div class="equipment-slot">
+                          <div>Ring</div>  
+                          <div class="equipment-icon">
+                            
+                          </div>
+                           <div>+0% Gold</div>                       
+                        </div>
+                        <div class="equipment-slot">
+                          <div>Scroll</div>  
+                          <div class="equipment-icon">
+                            
+                          </div>
+                           <div>+0% Souls</div>                       
+                        </div>
+
+                      </div>
+                      <div class="inventory-head">Available Items</div>
+                      <div class="inventory-container">
+                          <div class="inventory-slot" v-for="item in inventory" :style="{ 'background-image' : `URL('icons/items/${item.icon}')`}" @click="equipItem(item.itemType,item.id)">
+                            <div class="inventory-slot-tooltip">
+                              {{item.name}}
+                            </div>
+                          </div>
+                      </div>
+                  </div>    
+                  <div v-if="currentTab == 2"> 
+                      Souls Tab! 
+                  </div> 
+                  <div v-if="currentTab == 3"> 
+                      Specials Tab! 
+                  </div>             
+                </div>
               </div>
               </div>
             </div>
             <div class="right">
             <div class="level-select">
-              
+              <div class="level-area">
+                <div class="current-level">
+                  <div class="level-text small-text">Level</div>
+                  <div class="level-text">{{level}}</div>
+                </div>
+                <div class="level-info">
+                  <div class="level-name">Gloomy Hills</div>
+                  <div class="level-name">Back To Boss</div>
+                </div>
+                <div class="level-progress">
+                  <div class="level-prog-fill" :style="{'width' : `${(monsterCount * 10) - 10}%`}" v-if="!isBossLevel"></div>
+                  <div class="level-prog-fill" id="boss-fill" :style="{'width' : `10%`}" v-else>
+                    <div id="boss-timer"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="level-area">
-              <div class="current-level">
-                Level {{level}}
-              </div>
-              <div class="level-monster-count" v-if="!isBossLevel">
-                {{monsterCount}}/{{monsterMaxCount}}
-              </div>
-              <div class="level-monster-count" id="boss-timer" v-else>
-                
+            <div class="loot-area">
+              <div class="chest-area">
+                <div class="chest"></div>
               </div>
             </div>
             <div class="click-area" @click="attack($event)">
@@ -275,67 +364,113 @@ export default {
     this.socket.on('SocketId', data => {
       this.mySocket = data.socketId
     })
+    this.socket.on('ITEM-DROP', data => {
+      this.itemDrops = data.itemDrops
+      this.inventory = data.inventory
+      this.dropModal = true
+      console.log(this.inventory)
+    })
     this.socket.on('BUY-CHAR', data => {
+      this.menuSound()
       this.boughtHero = data.bought
       this.nextHero = data.next
       this.goldCount = data.gold
       this.dps = data.dps
     })
-    if(this.loggedIn)
-    {
-      this.socket.on('disconnect', data => {
+    this.socket.on('EQUIPPED', data => {
+      this.dpc = data.dpc
+      this.inventory = data.inventory
+      this.equippedWeapon = data.equippedWeapon
+    })
+    this.socket.on('DOWN-LEVEL', data => {
+      console.log(data)
+      this.bossKilled = data.bossFight
+      this.level = data.level
+      this.monsterCount = data.monsterCount
+      this.isBossLevel = false
+       this.getNewMonster()
+    })
+
+    this.socket.on('disconnect', data => {
         console.log('please relog')
-        this.disconnected = true;
-      })
-    }
+       // this.disconnected = true;
+        this.loggedIn = false
+
+    })
     this.socket.on('BOSS-START', data => {
 
     })
     this.socket.on('ATTACK', data => {
-      // console.log(data)
       this.monsterCurrentHP = this.monsterCurrentHP - data.amount;
-      // if(this.monster)
+      if(this.monsterCurrentHP < 0){
+        this.monsterCurrentHP = 0
+      }
     })
     this.socket.on('GOLD', data => {
+      console.log(data)
       var self = this
       this.monsterCount = data.monsterCount,
       this.goldCount = data.goldCount
       this.isBossLevel = data.isBoss
+
       if(this.isBossLevel){
+        this.bossKilled = true
         setTimeout(() => {
-          self.socket.emit('LEVEL-CHANGE', { socketId: self.mySocket, monsterCount: 1 }) 
+          self.socket.emit('LEVEL-CHANGE', { bossKilled: self.bossKilled, monsterCount: 0 }) 
         }, 1500)
         
         console.log('boss killed!')
+        return 
       }
       if(this.monsterCount == 11) {
         this.monsterCount = 10
         setTimeout(() => {
           self.socket.emit('LEVEL-CHANGE', { socketId: self.mySocket, monsterCount: 11 }) 
         }, 1500)
+      }
 
+      if(!this.isBossLevel)
+      {
+        setTimeout(() => {
+          self.image = data.currentMonster.image
+          self.monsterName = data.currentMonster.name
+          self.getNewMonster()
+        }, 1500)
       }
 
     })
     this.socket.on('KILL-MONSTER', data => {
 
     })
+    this.socket.on('HERO-LEVEL', data => {
+      //do shit
+    })
     this.socket.on('BOSS-END', data => {
       this.level = data.level
       this.monsterCount = data.monsterCount
-      this.isBossLevel = data.bossFight
+      this.bossKilled = data.bossKilled
+
     })
     this.socket.on('READY', data => {
         this.isAttackable = data.canAttack
     })
     this.socket.on('LOGIN', data => {
+     // console.log(data)
       this.loggedIn = true;
-      console.log(data)
       this.goldCount = data.gold
       this.level = data.level
       this.monsterCount = data.monsterCount
       this.boughtHero = data.heroes
       this.nextHero = data.nextHero
+      this.dps = data.dps
+      this.dpc = data.dpc
+      this.image = data.currentMonster.image
+      this.monsterName = data.currentMonster.name
+      this.equippedWeapon = data.equippedWeapon
+      this.equippedAmulet = data.equippedAmulet
+      this.equippedRing = data.equippedRing
+      this.equippedScroll = data.equippedScroll
+      this.inventory = data.inventory
       var self = this
       setTimeout(() => self.getNewMonster(), 20)
       setTimeout(() => self.dealAutoDamage(), 1500)
@@ -343,9 +478,11 @@ export default {
       this.checkAchievements()
       })
     this.socket.on('LEVEL-CHANGE', data => {
-      console.log('THE CURRENT LEVEL IS : ' + this.level + " WE SHOULD GO TO ONE MORE : " + (this.level + 1))
-      console.log(data)
+      // console.log('THE CURRENT LEVEL IS : ' + this.level + " WE SHOULD GO TO ONE MORE : " + (this.level + 1))
+      // console.log(data)
       this.goldCount = data.goldCount
+      this.monsterName = data.currentMonster.name
+      this.image = data.currentMonster.image
       this.monsterCount = 1
       this.level = data.level
       this.isBossLevel = data.bossFight
@@ -361,23 +498,35 @@ export default {
     },
     currentLevelRate: function(){
       return this.levelRate
+    },
+    playerInventory: function(){
+      return this.inventory
     }
   },
   data() {
     return {
+      inventory: [],
+      equippedWeapon : [],
+      equippedAmulet : [],
+      equippedRing : [],
+      equippedScroll : [],
+      currentTab: 0,
       boughtHero: [],
+      itemDrops: [],
       nextHero: [],
       loggedIn: false,
       mySocket: '',
-      imageList: ['testbg2.jpg','level2.jpg','testbg.jpg','demongirl.png','redbug.svg','slug.svg','heroes/luna-head.jpg','heroes/suyeon-head.jpg','heroes/yukki-head.jpg','heroes/mikon-head.jpg','heroes/fate-head.jpg','heroes/albedo-head.jpg',"logo.png","icons/spells/rapid.png",'icons/sword.png','gem.svg','coin.svg','hit.svg',"heroestab.svg","achtab.svg",'bluebug.svg','redbug.svg','slug.svg'
+      imageList: ['testbg2.jpg','levels/12.jpg','testbg.jpg','demongirl.png','spirit.png','slug.svg','heroes/luna-head.jpg','heroes/suyeon-head.jpg','heroes/yukki-head.jpg','heroes/mikon-head.jpg','heroes/fate-head.jpg','heroes/albedo-head.jpg',"logo.png","icons/spells/rapid.png",'icons/sword.png','gem.svg','coin.svg','hit.svg',"heroestab.svg","achtab.svg",'demongirl2.png','demongirl3.png','slug.svg'
       ],
       username: '',
       password: '',
       bossTimer: false,
       bossTime: '',
-      socket: io('127.0.0.1:3001'),
+      // socket: io('https://clickergame.tk/'),
+      socket: io('http://localhost:3001'),
       user: '',
       viewModal: false,
+      dropModal: false,
       modalHeader: '',
       skillCooldown: '',
       skillReady: true,
@@ -408,8 +557,9 @@ export default {
       dpcBonus: '',
       clickCount: 0,
       clicksPerSecond: 0,
+      isAttacking: false,
       dps: 0,
-      dpc: 250,
+      dpc: 0,
       levelRate: 1,
       isBossLevel: false,
       bossKilled: false,
@@ -448,21 +598,6 @@ export default {
         levelMax: 15,
          image: 'testbg.jpg'
       },],
-      monsters: [{
-        image: 'demongirl.png',
-        monsterMaxHP: 1,
-        monsterName: 'Dangerous Demongirl'
-      },{
-        image: 'redbug.svg',
-        monsterMaxHP: 1,
-        monsterName: 'Cunning Boop'
-      }],
-      bosses: [
-      {
-        image: 'slug.svg',
-        monsterMaxHP: 1,
-        monsterName: 'Recently Awoken Boop'
-      }],
       characters: [
       { name: 'Luna',
         fullImg: 'luna.jpg',
@@ -539,25 +674,26 @@ export default {
       }
       var percentInc = 100 / this.imageList.length        
     },
+    equipItem(slot,id){
+      this.socket.emit('EQUIP', {
+         itemType : slot, id : id
+      })
+    },
     logIn(){
         var self = this;
-        console.log(this.username)
-          this.$axios.$post(`http://127.0.0.1:3001/login`, { username : self.username, password : self.password})
+       // this.$axios.$post(`https://clickergame.tk/api/login`, { username : self.username, password : self.password})
+          this.$axios.$post(`http://localhost:3001/api/login`, { username : self.username, password : self.password})
           .then((res) => {
-            console.log(res, this.username, this.username, 'LoL')
-
-                    this.socket.emit('CheckUser', {
-          user: this.username, socketId: this.mySocket
+            this.socket.emit('CheckUser', {
+              user: this.username, socketId: this.mySocket
         })
 
           }).catch(e => {
             console.log(e)
-          //  console.log(e)
           })
     },
     startBossTimer(){
       var self = this
-      console.log('starting 30 sec timer!')
       var endTime = new Date(); 
       endTime = new Date(endTime .getTime() + 30000);
       var interval = setInterval(function() {
@@ -568,6 +704,7 @@ export default {
             distance = 0
           }
           document.getElementById("boss-timer").innerHTML = (distance / 1000).toFixed(3);
+          document.getElementById("boss-fill").style.width = distance / 300 + "%";
           if(self.monsterCurrentHP <= 0) {
             document.getElementById("boss-timer").innerHTML = "";
             clearInterval(interval)
@@ -576,8 +713,6 @@ export default {
           {
             document.getElementById("boss-timer").innerHTML = "";
             clearInterval(interval)
-            // self.isBossLevel = false;
-            console.log('boss round is over!!')
             self.socket.emit('BOSS-END', {
               bossHP: self.monsterCurrentHP,
               bossKilled: self.bossKilled,
@@ -585,12 +720,27 @@ export default {
           }
       }, 10);
     },
+    changeTab(num){
+      this.currentTab = num
+    },
+    slashSound(){
+      var bflat = new Audio();
+      bflat.src = "audio/slash.mp3";
+      bflat.volume = 0.3;
+      bflat.play();
+    },
+    menuSound(){
+      var bflat = new Audio();
+      bflat.src = "audio/accent.mp3";
+      bflat.play();
+    },
     attack(e,special,ranX,ranY){
       if(this.monsterCurrentHP > 0 && this.isAttackable)
       {
         if(!special){
           this.clickCount++;
           this.clicksPerSecond++;
+          this.slashSound()
         }
         else {
           var offsetX = special.clientX
@@ -604,8 +754,13 @@ export default {
             return
           }
           event.preventDefault;
-        document.getElementsByClassName('hit-area')[0].style.left = `${offsetX-50}px`;
-        document.getElementsByClassName('hit-area')[0].style.top = `${offsetY-50}px`;
+          this.isAttacking = true;
+          var self = this
+          setTimeout(() => self.isAttacking = false, 100)
+        let random = Math.floor(Math.random() * 360) + 1;
+        document.getElementsByClassName('hit-area')[0].style.left = `${offsetX-125}px`;
+        document.getElementsByClassName('hit-area')[0].style.top = `${offsetY-125}px`;
+        document.getElementsByClassName('hit-area')[0].style.transform = `rotate(${random}deg)`;
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
         
         document.getElementsByClassName('hit-area')[0].classList.remove('hit-anim')
@@ -616,11 +771,10 @@ export default {
         // -> and re-adding the class
         document.getElementsByClassName('hit-area')[0].classList.add('hit-anim')
         this.socket.emit('DAMAGE', {
-          user: this.user,
-          amount: this.dpc,
-          monsterMaxHP: this.monsterMaxHP,
-          monsterCurrentHP: this.monsterCurrentHP,
-          socketId: this.mySocket
+          // user: this.user,
+          // monsterMaxHP: this.monsterMaxHP,
+          // monsterCurrentHP: this.monsterCurrentHP,
+          // socketId: this.mySocket
         })
         var self = this
         this.recentHits.push({"x": offsetX, "y": offsetY, "amount": this.dpc, "maxY" : offsetY - 60,
@@ -706,6 +860,7 @@ export default {
     },
 
     buyCharacter(charName){
+      
       this.socket.emit('BUY-CHAR', {
         name : charName
       })
@@ -728,19 +883,18 @@ export default {
       setTimeout(() => this.recentHits = [], 750)
       document.getElementById('monster-area').classList.remove('new-monster')
       document.getElementById('monster-area').classList.add('kill-monster')
+      // if(this.isBossLevel){
+      //   this.bossKilled = 
+      // }
       this.socket.emit('KILL-MONSTER', {
           user: this.user,
           monsterHP: this.monsterMaxHP,
           monsterCount: this.monsterCount,
           socketId: this.mySocket,
-          isBoss: this.isBossLevel
+          isBoss: this.isBossLevel,
+          bossKilled: this.bossKilled
       })
       this.isAttackable = false;
-      var self = this
-      if(!this.isBossLevel)
-      {
-        setTimeout(() => self.changeMonster(), 1500)
-      }
     },
     formatNumber(num){
        if (num >= 1000000000000000000000000000000000000000000000000000000000000000000) {
@@ -811,12 +965,6 @@ export default {
        }
        return num;
     },
-    changeMonster() {
-      if(this.monsterDeath == true)
-      {
-          this.getNewMonster()      
-      }
-    },
     simulateClick(x, y) {
     var clickEvent = document.createEvent('MouseEvents');
     clickEvent.initMouseEvent(
@@ -882,26 +1030,27 @@ export default {
       char.dps = totalDps;
     },
     levelCharacter(charName){
-      var index = this.characters.findIndex( slot => slot.name == charName)
-      let char = this.characters[index]
-      let totalLevelCost = this.getLevelCost(charName);
-      let endLevel = char.level + this.levelRate;
-        if(this.goldCount >= totalLevelCost)
-        {
-          this.goldCount = this.goldCount - totalLevelCost
-          char.level = endLevel;
-          this.calcExtraDps(charName)
-          char.cost = Math.round(char.baseCost * (1.07 * char.level))
-          //Lets update our DPS total now.
-          var totalDps = 0
-          this.characters.forEach(slot => {
-            if(slot.bought)
-            {
-              totalDps = totalDps + slot.dps
-            }
-          })
-          this.dps = totalDps
-        }
+      this.socket.emit('LEVEL-CHAR', { name : charName })
+      // var index = this.characters.findIndex( slot => slot.name == charName)
+      // let char = this.characters[index]
+      // let totalLevelCost = this.getLevelCost(charName);
+      // let endLevel = char.level + this.levelRate;
+      //   if(this.goldCount >= totalLevelCost)
+      //   {
+      //     this.goldCount = this.goldCount - totalLevelCost
+      //     char.level = endLevel;
+      //     this.calcExtraDps(charName)
+      //     char.cost = Math.round(char.baseCost * (1.07 * char.level))
+      //     //Lets update our DPS total now.
+      //     var totalDps = 0
+      //     this.characters.forEach(slot => {
+      //       if(slot.bought)
+      //       {
+      //         totalDps = totalDps + slot.dps
+      //       }
+      //     })
+      //     this.dps = totalDps
+      //   }
     },
     updateDmgPos(){
 
@@ -977,31 +1126,22 @@ export default {
       }, 1000);
     },
     getNewMonster(){
-      this.monsterOrder += 1;
-      if(this.monsterOrder > this.monsters.length - 1)
-      {
-        this.monsterOrder = 0;
-      }
-      this.monsterName = this.monsters[this.monsterOrder].monsterName
       this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
       this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level - 1)))
-      this.image = this.monsters[this.monsterOrder].image
       if(this.isBossLevel === true)
       {
         this.startBossTimer()
         this.bossKilled = false;
-        this.monsterName = this.bosses[0].monsterName
         this.monsterCurrentHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
         this.monsterMaxHP = Math.round(10 * ((this.level-1) + Math.pow(1.55, this.level)) * 10)
-        this.image = this.bosses[0].image
       }
       var self = this
       var imgX = 55;
-      var imageX = 250;
-      var imageY = 350;
-      var step = 55;
-      var stepMin = 45
-      var stepMax = 65
+      var imageX = 390;
+      var imageY = 546;
+      var step = 0;
+      var stepMin = 0
+      var stepMax = 0
       var canvas_size_x = 512;
       var canvas_size_y = 448;
       var reverse = false;
@@ -1021,6 +1161,11 @@ export default {
             }
 
       }
+      if(self.isAttacking){
+        document.getElementById('monster-area').classList.add('monster-hit')        
+      } else {
+        document.getElementById('monster-area').classList.remove('monster-hit')        
+      }
       var canvas = document.getElementById('monster-area');
       var context = canvas.getContext('2d');
       var imageObj = new Image();
@@ -1031,7 +1176,7 @@ export default {
       context.shadowColor = "rgba(0,0,0,0.8)";
       context.fillStyle = `rgba(255,255,255,1)`;       
       context.clearRect(0, 0, canvas_size_x, canvas_size_y);
-        context.drawImage(imageObj, 130, step, imageX, imageY);
+        context.drawImage(imageObj, 60, step, imageX, imageY);
         global.requestAnimationFrame(draw)
       }
       draw()
@@ -1133,7 +1278,7 @@ font-family: 'Titillium Web', sans-serif;
     align-items: flex-end;
     justify-content: center;
     height: 20%;
-    margin-top: 45%;
+    margin-top: 64%;
 }
 .monster-hp-bar {
     background: #191e2f;
@@ -1233,7 +1378,7 @@ font-family: 'Titillium Web', sans-serif;
     background: grey;
     position: relative;
     overflow: hidden;
-    background-image: URL('testbg2.jpg');
+    background-image: URL('levels/12.jpg');
     background-size: cover;
     display: flex;
     -moz-user-select: none;
@@ -1250,6 +1395,14 @@ font-family: 'Titillium Web', sans-serif;
     width: 66%;
     height: 100%;
     justify-content: space-between;
+}
+.inventory-head {
+    width: 100%;
+    display: flex;
+    font-size: 1.5em;
+    color: #fff0a1;
+    justify-content: center;
+    text-shadow: 2px 2px black;
 }
 .inventory.gold-tab {
     position: relative;
@@ -1297,6 +1450,9 @@ font-family: 'Titillium Web', sans-serif;
     width: 10em;
     align-items: center;
     height: 76px;
+}
+span.big-stat-text {
+    font-size: 2em;
 }
 span.large-btn-text {
     font-size: 1.7em;
@@ -1360,11 +1516,11 @@ span.med-btn-text {
     position: absolute;
     left: 0;
     color: white;
-    background: #303852;
+    background: #5d5149;
     padding: 0.4em;
     padding-left: 0.4em;
     padding-right: 0.6em;
-    box-shadow: 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #312b26, 0 4px 2px rgba(0, 0, 0, .5);
 }
 .right {
     width: 50%;
@@ -1390,12 +1546,13 @@ span.med-btn-text {
     position: absolute;
     opacity: 0;
     animation-iteration-count: 1;
-    width: 100px;
-    height: 100px;
+    width: 250px;
+    height: 250px;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;
-    background-image: URL("hit.svg");
+    background-image: URL("slash.png");
+  /*  animation: hit 0.4s;*/
 }
 .hit-anim {
       -webkit-animation: hit;
@@ -1404,9 +1561,9 @@ span.med-btn-text {
     animation-duration: 0.2s;
 }
 @keyframes hit {
-  0% { opacity: 1.0;  background-size: 120%;}
-  50% {opacity: 0.5;  background-size: 35%}
-  100% {opacity: 0;  background-size: 100%;}
+  0% { opacity: 1.0; }
+  50% {opacity: 0.5;  }
+  100% {opacity: 0;  }
 }
 .green-hp {
   background: #16e473;
@@ -1427,7 +1584,27 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     width: 100%;
     border-radius: 4em;
     position: relative;
-
+}
+.inventory-tab, .heroes-tab, .divine-tab, .skills-tab {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.inventory-row {
+    width: 100%;
+    height: 33%;
+    display: flex;
+    margin-bottom: 0.5em;
+}
+.inventory-container {
+    flex-wrap: wrap;
+    display: flex;
+    height: 45%;
+    padding: 1em;
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: 2.5%;
 }
 .hp-text {
     width: 100%;
@@ -1449,21 +1626,33 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
 .pink-text {
     color: aqua;
 }
+
+.gold-coin {
+    content: " ";
+    position: absolute;
+    left: 5%;
+    background-image: URL("goldcoin.png");
+    height: 2em;
+    background-position: center;
+    background-size: cover;
+    width: 2em;
+}
 .stat-tab {
     justify-content: center;
     border-radius: 2em;
     padding-right: 0.5em;
     padding-left: 0.5em;
-    border: solid 2px #75624a;
+    border: solid 2px #080707;
     display: flex;
-    width: 24%;
+    width: 49%;
     height: 3em;
     font-weight: bold;
-    font-size: 1em;
     color: white;
     text-shadow: 2px 2px black;
-    background: #241000;
+    background: linear-gradient(#483f39,#3a312b);
     align-items: center;
+    position: relative;
+    box-shadow: inset 0px 2px #6d635c;
 }
 .spell-tool-name {
     color: white;
@@ -1471,9 +1660,9 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
 .skill-container {
     display: flex;
     padding: 0.25em;
-    background: #303852;
+    background: #27211d;
     border-radius: 4px;
-    box-shadow: 1px 1px 0 rgb(74, 88, 133) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #2c375a, 0 4px 2px rgba(0, 0, 0, .5);
+    box-shadow: 1px 1px 0 rgb(93, 81, 73) inset, 0 -1px 0 rgba(255, 255, 255, .1) inset, 0 4px 0 #5d5149, 0 4px 2px rgba(0, 0, 0, .5);
 }
 .spell-tool-info {
     margin-top: 0.5em;
@@ -1518,7 +1707,7 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     width: 3em;
     height: 3em;
     position: relative;
-    background: #4a5885;
+    background: #423832;
     margin-right: 0.25em;
     background-position: center;
     background-size: cover;
@@ -1540,12 +1729,14 @@ box-shadow: 0 1px 0px 2px rgb(230, 2, 15) inset, 0 -1px 0 rgba(255, 255, 255, 0.
     width: 100%;
     flex-direction: column;
     background: #5d5149;
-    height: 82.5%;
+    height: 91%;
     padding: 0.5em;
     border: solid 1px black;
     border-top: none;
     border-bottom: none;
     padding-bottom: 0;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 .game-logo {
     width: 100%;
@@ -1580,7 +1771,7 @@ button.login-button {
     padding: 1em;
 }
 .health-anim-slow {
-  transition: width 0.5s ease-in-out;
+  transition: width 0.25s ease-in-out;
 }
 .health-anim-quick {
   transition: 0s;
@@ -1668,6 +1859,94 @@ text-shadow: -1px -1px 0 #000000;
   position: absolute;
   width: 100%;
   height: 100%;
+}
+.equipment-container {
+    display: flex;
+    height: 40%;
+    width: 100%;
+    justify-content: center;
+    background: #4e443e;
+    border: solid 2px #352f2b;
+    border-radius: 8px;
+    align-items: center;
+    margin-top: 0.25em;
+}
+.item-name {
+    width: 100%;
+    border-bottom: solid 2px gray;
+    font-weight: bolder;
+}
+.inventory-slot {
+    height: 4em;
+    background: #463f3a;
+    width: 4em;
+    margin: 0.25em;
+    border-radius: 8px;
+    border: solid 2px #362f2c;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+.item-description {
+    width: 100%;
+    flex-wrap: nowrap;
+    flex-grow: 1;
+    display: flex;
+    margin-top: 0.5em;
+    white-space: nowrap;
+}
+.inventory-slot-tooltip {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    background: #161719;
+    border: solid 2px #a0968f;
+    z-index: 400;
+    padding: 1em;
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    display: none;
+    flex-direction: column;
+    font-weight: normal;
+}
+.equipment-icon:hover .inventory-slot-tooltip {
+  display: flex;
+}
+.inventory-slot:hover .inventory-slot-tooltip {
+  display: flex;
+}
+.loot-area {
+    display: none;
+    width: 20%;
+    position: absolute;
+    height: 30%;
+    right: 5%;
+    bottom: -6%;
+}
+.equipment-slot {
+    font-size: 0.9em;
+    font-weight: bold;
+    color: white;
+    width: 25%;
+    height: 100%;
+    margin: 0.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.equipment-icon {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 5em;
+    height: 5em;
+    background-color: #2f2b28;
+    border: solid 2px #6b6059;
+    border-radius: 8px;
+        position: relative;
 }
 .hit-number-text {
   z-index: 88;
@@ -1767,33 +2046,33 @@ text-shadow: -1px -1px 0 #000000;
   border-radius: 4px;
   margin-right: 1em;
 }
+.level-monster-count {
+    z-index: 150;
+}
 .character {
     display: flex;
-    margin-left: 10%;
-    width: 90%;
-    height: 6em;
+    width: 100%;
+    height: 8em;
     position: relative;
     justify-content: space-between;
+    background: #694e3d;
+    border: solid 2px #3a312b;
+    padding: 0.5em;
+    padding-left: 0;
 }
 .character-left {
-    top: 1px;
-    z-index: 5;
-    height: calc(100% - 2px);
-    left: -3em;
+    height: 100%;
     display: flex;
     align-items: center;
     flex-direction: column;
     color: white;
-    position: absolute;
-    background: red;
-    border-radius: 50%;
     overflow: hidden;
-    box-shadow: 0px 0px 0 2px #1b1715;
+    width: 30%;
 }
 .char-dps {
-    justify-content: flex-end;
+    justify-content: flex-start;
     display: flex;
-    width: 94%;
+    width: 100%;
 }
 .pink {
     background: linear-gradient(rgb(241, 8, 255),rgb(171, 22, 247)) !important;
@@ -1812,8 +2091,10 @@ text-shadow: -1px -1px 0 #000000;
     color: #efefef;
 }
 .level-select {
-  display: flex;
-  height: 15%;
+    display: flex;
+    height: 14%;
+    align-content: flex-start;
+    justify-content: center;
 }
 .char-cost {
     align-items: center;
@@ -1822,17 +2103,18 @@ text-shadow: -1px -1px 0 #000000;
     height: 100%;
     background: none;
     justify-content: flex-end;
-    padding-bottom: 0.25em;
 }
 .char-slot-bg {
     display: flex;
     width: 100%;
     align-items: center;
-    height: 6em;
+    height: 8em;
     position: relative;
     justify-content: center;
-    margin-bottom: 0.6em;
-    margin-left: 0.5em;
+}
+.monster-hit {
+    transform: rotate(-5deg);
+    transition: 0.2s;
 }
 .char-slot-bg:last-child {
   margin-bottom: 0;
@@ -1850,12 +2132,13 @@ text-shadow: -1px -1px 0 #000000;
     flex-direction: column;
 }
 .char-img {
-    width: 6em;
+    width: 100%;
     height: 100%;
-    border-radius: 50%;
+    padding: 0.5em;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 .char-amount-gold {
-  font-size: 0.8em;
     display: flex;
     width: 100%;
     justify-content: center;
@@ -1866,12 +2149,50 @@ text-shadow: -1px -1px 0 #000000;
     display: flex;
     flex-wrap: wrap;
     background: #3a312b;
-    height: 100%;
+    height: 90%;
     align-content: flex-start;
     overflow-y: scroll;
     justify-content: center;
-    padding: 0.5em;
+    overflow-x: hidden;
     border: solid 1px #211d1a;
+}
+.level-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.left-small-menu {
+    height: 3em;
+    display: flex;
+    padding: 0.5em;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    width: 100%;
+    padding-bottom: 1em;
+    border-top: none;
+}
+.level-prog-fill {
+    height: 100%;
+    box-shadow: inset 0px 2px #d2b878;
+    background: linear-gradient(#b79a56,#887037);
+/*    transition: width 0.25s ease-in;*/
+}
+#boss-timer {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  position: absolute;
+  height: 100%;
+}
+.level-progress {
+    width: 100%;
+    background: #3a312b;
+    border: solid 2px black;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 1em;
+    height: 3em;
 }
 .disabled {
     filter: grayscale(100%);
@@ -1900,18 +2221,18 @@ text-shadow: -1px -1px 0 #000000;
     justify-content: center;
     z-index: 2;
     white-space: nowrap;
-    font-size: 0.8em;
 }
 .char-portrait {
     width: 100%;
     height: 100%;
     background-size: cover;
     background-position: center;
-    border-radius: 6px;
+    border-radius: 1em;
+    border: solid 3px #3a312b;
 }
 .char-spell-icon {
-    width: 2em;
-    height: 2em;
+    width: 2.5em;
+    height: 2.5em;
     border-radius: 4px;
     border: solid 2px #2a3147;
     background: URL("icons/spells/rapid.png");
@@ -1922,41 +2243,91 @@ text-shadow: -1px -1px 0 #000000;
 }
 .char-spells {
     display: flex;
-    width: 35%;
-    margin-left: 18%;
-    height: 3em;
+    width: 100%;
     align-items: flex-end;
 }
 .char-info-header {
     display: flex;
     width: 100%;
-    height: 2em;
-    border-top-right-radius: 8px;
-    background: #b79a56;
     align-items: center;
-    border: solid 2px black;
-    border-bottom: none;
     color: white;
     font-weight: bold;
 }
 .char-info-body {
-    height: 4em;
     width: 100%;
-    border-bottom-right-radius: 8px;
-    background: #93672d;
     flex-direction: row;
     display: flex;
-    border: solid 2px #1b1715;
     border-top: none;
 }
-.char-info {
+.chest-area {
+    z-index: 500;
     width: 100%;
+    height: 40%;
+    border-radius: 50%;
+    background: #00d4b8c7;
+    box-shadow: 0px 0px 20px 5px #1259daa6;
+    position: relative;
+}
+.chest {
+    position: absolute;
+    background-image: URL("chest.png");
+    width: 120%;
+    height: 140%;
+    background-size: cover;
+    left: -10%;
+    bottom: -13%;
+}
+.chest-area:hover {
+  animation: shake 1s infinite;
+}
+@keyframes shake {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+  60% {
+    transform: rotate(4deg);
+  }
+  70% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.chest-area {
+    width: 100%;
+    height: 40%;
+    border-radius: 50%;
+    background: #00d4b8c7;
+    position: relative;
+    animation: glow 2s infinite;
+}
+@keyframes glow {
+  0% {
+    box-shadow: 0px 0px 20px 4px #5ee0c3a6;
+  }
+  25% {
+    box-shadow: 0px 0px 20px 9px #48d1d28c;
+  }
+  50% {
+    box-shadow: 0px 0px 20px 3px #48d2a0a6;
+  }
+  75% {
+    box-shadow: 0px 0px 20px 9px #48d1d28c;
+  }
+  100% {
+    box-shadow: 0px 0px 20px 4px #5ee0c3a6;
+  }
+}
+.char-info {
+    width: 70%;
     z-index: 2;
     display: flex;
-    justify-content: flex-end;
-        flex-direction: column;
+    flex-direction: column;
 }
-
 .menu-option-content {
     z-index: 2;
     display: flex;
@@ -1968,6 +2339,28 @@ text-shadow: -1px -1px 0 #000000;
     height: 100%;
     font-size: 0.9em;
 }
+.special-attack {
+    position: absolute;
+    z-index: 400;
+    background: #00000054;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+/*.character-face {
+    position: absolute;
+    width: 120%;
+    height: 30%;
+    left: -10%;
+    top: 30%;
+    background-image: url("heroes/luna.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-top: solid 3px black;
+    border-bottom: solid 3px black;
+    background-position-y: 20%;
+    transform: rotate(5deg);
+}*/
 .menu-icon {
     height: 100%;
     width: 100%;
@@ -2005,46 +2398,74 @@ img.buy-icon {
   box-shadow: inset 0 0 0px 5px #155182;
   z-index: 10;
 }
+.small-text {
+    font-size: 1.2rem !important;
+    margin-top: -1em;
+}
+.level-text {
+    display: flex;
+    font-size: 2em;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-shadow: 2px 2px black;
+}
+.current-level {
+    flex-direction: column;
+    display: flex;
+    position: absolute;
+    justify-content: inherit;
+    align-items: center;
+    top: -5%;
+    left: -4%;
+    width: 33%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-image: URL("menubadge.png");
+    height: 150%;
+}
 .level-area {
+    padding: 2.5%;
+    padding-bottom: 3%;
+    padding-left: 25%;
     pointer-events: none;
     z-index: 99;
-    height: 15%;
+    height: 100%;
     display: flex;
-    width: 100%;
+    width: 80%;
+    position: relative;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 1.8em;
+    font-size: 1em;
     color: white;
-    text-shadow: 2px 2px black;
+    background: #5d5149;
+    box-shadow: inset -2px -3px black;
+    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 .purple {
     margin-top: 4px;
+    height: 4em;
     text-shadow: -1px -1px 0 #3a94d4;
     background: #008ec7;
-    background-image: linear-gradient(to bottom, #00c7c7, #00a0ab);
+    background-image: radial-gradient(ellipse at top, #13f3ff, #00a8ffbd);
     border-radius: 2px;
     border: solid 2px #2b2522;
     box-shadow: inset 2px 2px 0px 1px rgba(106, 219, 230, 0.36863), inset -2px -2px 1px 1px rgba(39, 60, 62, 0.74118);
 }
 .purple:hover {
-    margin-top: 4px;
-    text-shadow: -1px -1px 0 #3a94d4;
-    background: #008ec7;
-    background-image: linear-gradient(to bottom, #0fd6d6, #0caeb9);
-    border-radius: 2px;
-    border: solid 2px #2b2522;
-    box-shadow: inset 2px 2px 0px 1px rgba(122, 228, 239, 0.36863), inset -2px -2px 1px 1px rgba(68, 102, 105, 0.74118);
+    background-image: radial-gradient(ellipse at top, #aafbff, rgba(61, 179, 241, 0.74118));
+    box-shadow: inset 2px 2px 0px 1px rgba(106, 219, 230, 0.36863), inset -2px -2px 1px 1px rgba(39, 60, 62, 0.74118), 0px 0 13px 5px rgba(86, 181, 195, 0.27);
 }
 .bonus {
   color: aqua;
 }
 .push_button {
     position: relative;
-    max-height: 3em;
-    border-radius: 8px !important;
-    width: 127px;
+    border-radius: 1em !important;
+    width: 8em;
     padding-left: 1em;
     padding-right: 1em;
     color: #FFF;
@@ -2054,28 +2475,29 @@ img.buy-icon {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    font-weight: 600;
+}
+.sm-btn-margin {
     margin-left: 1em;
     margin-right: 1em;
 }
 .blue {
     margin-top: 4px;
-    text-shadow: -1px -1px 0 #3a94d4;
-    background: #45c700;
-    background-image: linear-gradient(to bottom, #45c700, #3bab00);
+    height: 4em;
+    text-shadow: -1px -1px 0 #3a1d2d;
+    background: #46243d;
+    background-image: radial-gradient(ellipse at top, #ff52f2, rgba(233, 38, 243, 0.74118));
     border-radius: 2px;
     border: solid 2px #2b2522;
-    box-shadow: inset 2px 2px 0px 1px #95e66a5e, inset -2px -2px 1px 1px #2f3e27bd;
+    box-shadow: inset 2px 2px 0px 1px rgba(243, 163, 218, 0.36863), inset -2px -2px 1px 1px rgba(37, 17, 35, 0.74118);
 }
 .push_button:hover {
   color: white !important;
 }
 
 .blue:hover {
-    background: #49d001;
-    background-image: linear-gradient(to bottom, #4dd007, #43b507);
-    border-radius: 2px;
-    border: solid 2px #2b2522;
-    box-shadow: inset 2px 2px 0px 1px rgba(154, 230, 114, 0.36863), inset -2px -2px 1px 1px rgba(80, 103, 68, 0.74118);
+    background-image: radial-gradient(ellipse at top, #e487dd, rgba(235, 115, 241, 0.74118));
+    box-shadow: inset 2px 2px 0px 1px rgba(243, 163, 218, 0.36863), inset -2px -2px 1px 1px rgba(37, 17, 35, 0.74118), 0 0 9px 3px rgba(242, 73, 233, 0.32);
 }
 .push_button:active {
 
@@ -2086,29 +2508,121 @@ img.buy-icon {
 .blue:active {
 
 }
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 800px) {
   body {
     background-color: lightblue;
   }
   .game-area {
     width: 100%;
-    height: 200%;
+    height: 100%;
     min-width: 100%;
     min-height: 100vh;
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: column-reverse;
-    background-size: 300%;
+/*    flex-wrap: wrap;
+    flex-direction: column-reverse;*/
+ /*   background-size: 300%;*/
     background-position: top right;
   }
-  .left, .right {
+.left, .right {
+    width: 50%;
+    min-width: 50%;
+    height: 100vh;
+    min-height: 100vh;
+}
+.left-panel-content {
+    height: 79%;
     width: 100%;
+    margin-left: 0;
+    border-radius: 8px;
+}
+.char-name {
+    text-shadow: 2px 2px black;
+    width: 6em;
+    align-items: center;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1.5em;
+    margin-right: 0.5em;
+    color: #efefef;
+}
+.char-spells {
+    display: flex;
+    width: 100%;
+    align-items: flex-end;
+}
+.char-portrait {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0;
+}
+.character-left {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    overflow: hidden;
+}
+.monster-status {
+    margin-top: 45%;
+}
+.loot-area {
+    top: 77%;
+    position: absolute;
+    right: 2.5%;
+    width: 20%;
+    height: 30%;
+}
+  .login-screen {
+    width: 100%;
+    height: 100vh;
     min-width: 100%;
-    min-height: 100vh
-  }
-  .monster-status {
-        margin-top: 100%;
-  }
+    min-height: 100vh;
+    background: grey;
+    position: relative;
+    overflow: hidden;
+    background-image: URL('loadingbg.jpg');
+    background-size: cover;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+}
+.skills-area {
+    z-index: 200;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    height: 15%;
+    align-items: flex-end;
+    display: none;
+}
+.stats-area {
+    width: 100%;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+.game-logo {
+    width: 100%;
+    height: 50%;
+    background-image: URL('logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    margin-bottom: 1em;
+}
+.left-panel-content {
+    height: 75%;
+    width: 95%;
+    margin-left: 0;
+    border-radius: 8px;
+}
 }
 
 </style>
