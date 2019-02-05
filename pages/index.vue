@@ -7,9 +7,18 @@
           </div>
           <div class="user-area">
             <div v-if="loadingDone">
+              <div v-if="!registering">
               <input class="login-input" type="text" v-model="username">
               <input class="login-input"type="password" v-model="password">
               <button class="login-button" @click="logIn()">Log in</button>
+              <a class="register-text" @click="registering = !registering">Need an account? Register here.</a>
+              </div>
+              <div v-else>
+              <input class="login-input" type="text" v-model="username">
+              <input class="login-input"type="password" v-model="password">
+              <input class="login-input" type="email" v-model="email">
+              <button class="login-button" @click="register()">Log in</button>
+              </div>
             </div>
             <div v-else>
               <div class="loading-bar">
@@ -222,10 +231,14 @@
                         </div>
                         <div class="equipment-slot">
                           <div>Ring</div>  
-                          <div class="equipment-icon">
-                            
+                          <div class="equipment-icon" :style="{ 'background-image' : `URL('icons/items/${equippedRing.icon}')`}">
+                                                      <div class="inventory-slot-tooltip" v-if="equippedRing.name">
+                              <div class="item-name">{{equippedRing.name}}</div>
+                              <div class="item-description"> Increases DPC by {{equippedRing.bonusAmount}}</div>
+                            </div>
                           </div>
-                           <div>+0% Gold</div>                       
+                          <div v-if="equippedRing.bonusAmount > 0">+{{Math.round(equippedRing.bonusAmount * 100)}}% Gold</div>
+                          <div v-else>+0% Gold</div>                     
                         </div>
                         <div class="equipment-slot">
                           <div>Scroll</div>  
@@ -378,9 +391,16 @@ export default {
       this.dps = data.dps
     })
     this.socket.on('EQUIPPED', data => {
-      this.dpc = data.dpc
+      
       this.inventory = data.inventory
-      this.equippedWeapon = data.equippedWeapon
+      if(data.equippedWeapon){
+        this.dpc = data.dpc
+        this.equippedWeapon = data.equippedWeapon
+      }
+      if(data.equippedRing){
+        this.goldBonus = data.goldBonus
+        this.equippedRing = data.equippedRing
+      }      
     })
     this.socket.on('DOWN-LEVEL', data => {
       console.log(data)
@@ -520,6 +540,8 @@ export default {
       ],
       username: '',
       password: '',
+      email: '',
+      registering: false,
       bossTimer: false,
       bossTime: '',
       // socket: io('https://clickergame.tk/'),
@@ -571,7 +593,7 @@ export default {
       disconnected: false,
       monsterName: '',
       goldCount: 0,
-      goldBonus: 100,
+      goldBonus: 0,
       vipCount: 0,
       vipBonus: 0,
       gemCount: 0,
@@ -685,6 +707,20 @@ export default {
           this.$axios.$post(`http://localhost:3001/api/login`, { username : self.username, password : self.password})
           .then((res) => {
             this.socket.emit('CheckUser', {
+              user: this.username, socketId: this.mySocket
+        })
+
+          }).catch(e => {
+            console.log(e)
+          })
+    },
+    register(){
+        var self = this;
+       // this.$axios.$post(`https://clickergame.tk/api/login`, { username : self.username, password : self.password})
+          this.$axios.$post(`http://localhost:3001/api/register`, { username : self.username, password : self.password, email : self.email})
+          .then((res) => {
+            console.log(res)
+            self.socket.emit('CheckUser', {
               user: this.username, socketId: this.mySocket
         })
 
