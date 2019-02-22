@@ -11,8 +11,8 @@
 								<div class="error-message" v-if="loginError">
 									{{loginError}}
 								</div>
-								<input class="login-input" type="text" v-model="username">
-								<input class="login-input"type="password" v-model="password">
+								<input class="login-input" type="text" v-model="username" placeholder="Username">
+								<input class="login-input"type="password" v-model="password" placeholder="Password">
 								<button class="login-button" @click="logIn()">Log in</button>
 								<a class="register-text" @click="registering = !registering; loginError = ''">Need an account? Register here.</a>
 							</div>
@@ -20,10 +20,10 @@
 								<div class="error-message" v-if="loginError">
 									{{loginError}}
 								</div>
-								<input class="login-input" type="text" v-model="username">
-								<input class="login-input"type="password" v-model="password">
-								<input class="login-input" type="email" v-model="email">
-								<button class="login-button" @click="register()">Log in</button>
+								<input class="login-input" type="text" v-model="username" placeholder="Username">
+								<input class="login-input"type="password" v-model="password" placeholder="Password">
+								<input class="login-input" type="email" v-model="email" placeholder="Email">
+								<button class="login-button" @click="register()">Register</button>
 							</div>
 						</div>
 						<div v-else>
@@ -305,9 +305,9 @@
 									<div class="level-name" @click="redoBoss()">Back To Boss</div>
 								</div>
 								<div class="level-progress">
-									<div class="level-prog-fill" :style="{'width' : `${(monsterCount * 10) - 10}%`}" v-if="!isBossLevel"></div>
-									<div class="level-prog-fill" id="boss-fill" :style="{'width' : `10%`}" v-else>
-										<div id="boss-timer"></div>
+									<div class="level-prog-fill" :style="{'width' : `${monsterCount * 10}%`}" v-if="!isBossLevel"></div>
+									<div class="level-prog-fill" id="boss-fill" :style="{'width' : `${Math.floor(bossTime * 3.33)}%`}" v-else>
+										<div id="boss-timer">{{bossTime}}</div>
 									</div>
 								</div>
 							</div>
@@ -403,6 +403,11 @@ export default {
 		this.socket.on('SocketId', data => {
 			this.mySocket = data.socketId
 		})
+		this.socket.on('BOSS-TIMER', data => {
+			console.log(data)
+			this.isBossLevel = true
+			this.bossTime = data.currentTime
+		})
 		this.socket.on('LEVEL-CHAR', data => {
 			console.log(data)
 			let updateChar = data.hero
@@ -438,16 +443,18 @@ export default {
 		})
 		this.socket.on('DOWN-LEVEL', data => {
 			console.log(data)
-			this.bossKilled = data.bossFight
+			this.isBossLevel = data.bossFight
 			this.level = data.level
 			this.monsterCount = data.monsterCount
-			this.isBossLevel = false
-			this.image = data.currentMonster.image
-			this.monsterName = data.currentMonster.name
-			 this.getNewMonster()
-			 this.monsterCurrentHP = data.currentMonster.monsterCurrentHP
-			 this.monsterMaxHP = data.currentMonster.monsterMaxHP
-			 this.bossKilled = data.bossKilled
+				setTimeout(() => {
+					self.image = data.currentMonster.image
+					self.monsterName = data.currentMonster.name
+					self.getNewMonster()
+					self.monsterCurrentHP = data.currentMonster.monsterCurrentHP
+					self.monsterMaxHP = data.currentMonster.monsterMaxHP
+			//		self.bossKilled = data.bossKilled
+				}, 500)
+			
 		})
 
 		this.socket.on('disconnect', data => {
@@ -472,24 +479,7 @@ export default {
 			this.monsterCount = data.monsterCount,
 			this.goldCount = data.goldCount
 			this.isBossLevel = data.isBoss
-
-			if(this.isBossLevel){
-				this.bossKilled = true
-				setTimeout(() => {
-					self.socket.emit('LEVEL-CHANGE', { bossKilled: self.bossKilled, monsterCount: 0 }) 
-				}, 1500)
-				
-				console.log('boss killed!')
-				return 
-			}
-			if(this.monsterCount == 11) {
-				this.monsterCount = 10
-				setTimeout(() => {
-					self.socket.emit('LEVEL-CHANGE', { socketId: self.mySocket, monsterCount: 11 }) 
-				}, 1500)
-			}
-
-			if(!this.isBossLevel && this.monsterCount != 10)
+			if(!this.isBossLevel && this.monsterCount != 11)
 			{
 				setTimeout(() => {
 					self.image = data.currentMonster.image
@@ -497,7 +487,7 @@ export default {
 					self.getNewMonster()
 					self.monsterCurrentHP = data.currentMonster.monsterCurrentHP
 					self.monsterMaxHP = data.currentMonster.monsterMaxHP
-					self.bossKilled = data.bossKilled
+			//		self.bossKilled = data.bossKilled
 				}, 1500)
 			}
 
@@ -505,12 +495,10 @@ export default {
 		this.socket.on('HERO-LEVEL', data => {
 			//do shit
 		})
-		this.socket.on('BOSS-END', data => {
-			this.level = data.level
-			this.monsterCount = data.monsterCount
-			this.bossKilled = data.bossKilled
-
-		})
+		// this.socket.on('BOSS-END', data => {
+		// 	// this.monsterCount = data.monsterCount
+		// 	// this.bossKilled = data.bossKilled
+		// })
 		this.socket.on('READY', data => {
 				this.isAttackable = data.canAttack
 		})
@@ -533,7 +521,7 @@ export default {
 			this.inventory = data.inventory
 				this.monsterCurrentHP = data.currentMonster.monsterCurrentHP
 				this.monsterMaxHP = data.currentMonster.monsterMaxHP
-				this.bossKilled = data.bossKilled  
+			//	this.bossKilled = data.bossKilled  
 			var self = this
 			setTimeout(() => {
 				self.getNewMonster()      
@@ -542,17 +530,16 @@ export default {
 			this.checkAchievements()
 			})
 		this.socket.on('LEVEL-CHANGE', data => {
-			// console.log('THE CURRENT LEVEL IS : ' + this.level + " WE SHOULD GO TO ONE MORE : " + (this.level + 1))
-			// console.log(data)
-			// this.goldCount = data.goldCount
-			this.monsterName = data.currentMonster.name
-			this.monsterCurrentHP = data.currentMonster.monsterCurrentHP
-			this.monsterMaxHP = data.currentMonster.monsterMaxHP
-			this.image = data.currentMonster.image
-			this.monsterCount = 1
+			this.monsterCount = data.monsterCount
 			this.level = data.level
 			this.isBossLevel = data.bossFight
-			self.getNewMonster()
+			if(this.isBossLevel){
+				this.monsterCurrentHP = data.currentMonster.monsterCurrentHP
+				this.monsterName = data.currentMonster.name
+				this.image = data.currentMonster.image
+				this.monsterMaxHP = data.currentMonster.monsterMaxHP
+			}
+			//self.getNewMonster()
 		})
 	},
 	computed: {
@@ -590,8 +577,7 @@ export default {
 			email: '',
 			registering: false,
 			animFrame: '',
-			bossTimer: false,
-			bossTime: '',
+			bossTime: false,
 			// socket: io('https://clickergame.tk/'),
 			socket: io('http://localhost:3001'),
 			user: '',
@@ -633,7 +619,7 @@ export default {
 			levelRate: 1,
 			isBossLevel: false,
 			loginError: '',
-			bossKilled: false,
+			bossKilled: true,
 			isAttackable: true,
 			monsterOrder: -1,
 			monsterCurrentHP: '',
@@ -801,34 +787,6 @@ export default {
 						this.loginError = e.response.data
 					})
 		},
-		startBossTimer(){
-			var self = this
-			var endTime = new Date(); 
-			endTime = new Date(endTime .getTime() + 30000);
-			var interval = setInterval(function() {
-					var now = new Date();
-					var distance = endTime - now;
-					if(distance < 0)
-					{
-						distance = 0
-					}
-					document.getElementById("boss-timer").innerHTML = (distance / 1000).toFixed(3);
-					document.getElementById("boss-fill").style.width = distance / 300 + "%";
-					if(self.monsterCurrentHP <= 0) {
-						document.getElementById("boss-timer").innerHTML = "";
-						clearInterval(interval)
-					}
-					if(now > endTime)
-					{
-						document.getElementById("boss-timer").innerHTML = "";
-						clearInterval(interval)
-						self.socket.emit('BOSS-END', {
-							bossHP: self.monsterCurrentHP,
-							bossKilled: self.bossKilled,
-						})
-					}
-			}, 10);
-		},
 		changeTab(num){
 			return this.currentTab = num
 		},
@@ -988,14 +946,14 @@ export default {
 			// if(this.isBossLevel){
 			//   this.bossKilled = 
 			// }
-			this.socket.emit('KILL-MONSTER', {
-					user: this.user,
-					monsterHP: this.monsterMaxHP,
-					monsterCount: this.monsterCount,
-					socketId: this.mySocket,
-					isBoss: this.isBossLevel,
-					bossKilled: this.bossKilled
-			})
+			// this.socket.emit('KILL-MONSTER', {
+			// 		user: this.user,
+			// 		monsterHP: this.monsterMaxHP,
+			// 		monsterCount: this.monsterCount,
+			// 		socketId: this.mySocket,
+			// 		isBoss: this.isBossLevel,
+			// 		bossKilled: this.bossKilled
+			// })
 			this.isAttackable = false;
 		},
 		formatNumber(num){
@@ -1233,10 +1191,6 @@ export default {
 		},
 		getNewMonster(){
 			this.recentHits = []
-			if(this.isBossLevel === true)
-			{
-				this.startBossTimer()
-			}
 			var self = this
 			var imgX = 55;
 			var imageX = 390;
@@ -1340,10 +1294,17 @@ font-family: 'Titillium Web', sans-serif;
 		align-items: flex-end;
 }
 .game-modal-content {
+	  margin-top: 25%;
 		width: 40%;
 		z-index: 300;
 		border-radius: 1em;
 		box-shadow: 0 0 0 1px black, 0 0 0 3px #968610, 0 0 14px 2px black;
+    -webkit-animation: slide 0.5s forwards;
+    -webkit-animation-delay: 1s;
+    animation: slide 0.5s forwards;
+    animation-delay: 1s;
+    opacity: 0;
+    z-index: 999;
 }
 .modal-pop-content {
 		display: flex;
@@ -1385,12 +1346,26 @@ font-family: 'Titillium Web', sans-serif;
 		justify-content: center;
 		align-items: center;
 }
+
+@-webkit-keyframes slide {
+    100% { bottom: 0; }
+}
+
+@keyframes slide {
+    100% { margin-top: 0; opacity: 1 }
+}
 .game-modal-bg {
 		background: #0000006b;
 		width: 100%;
 		height: 100%;
 		position: absolute;
 		z-index: 200;
+    -webkit-animation: slide 0.5s forwards;
+    -webkit-animation-delay: 1s;
+    animation: slide 0.5s forwards;
+    animation-delay: 1s;
+    opacity: 0;
+    z-index: 999;
 }
 .monster-status {
 		pointer-events: none;
