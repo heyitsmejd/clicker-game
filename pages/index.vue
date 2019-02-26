@@ -67,6 +67,53 @@
 						</div>
 					</div>
 				</div>
+				<div class="character-upgrade-modal" v-if="charModal">
+						<div class="game-modal-bg" @click="charModal = !charModal"></div>
+						<div class="char-upgrade-content">
+									<div class="char-modal-left" :style="{ 'background-image' : `URL('heroes/${(charModal.name)}.jpg')`}">
+										<div class="char-modal-port-name">
+											<div>
+												<span class="char-modal-name">{{charModal.name}}</span>
+											</div>
+											<div>
+												Goddess of Fire
+											</div>
+										</div>
+									</div>
+									<div class="char-modal-right">
+										
+										<div class="char-modal-stats">
+											<div>
+												DPS: {{charModal.dps}}
+											</div>
+											<div>
+												LEVEL: {{charModal.level}}
+											</div>
+										</div>
+										<div class="char-modal-upgrades" >
+											<div v-for="skill in charUpgrades">
+												<div class="upgrade-skill">
+													{{skill.name}}
+												</div>
+												<div class="skill-spell" :style="{'background-image': `url('icons/spells/rapid.png')`}" >
+												</div>
+												<div class="upgrade-skill-cost">
+																											<a class="push_button blue" @click="purchaseSkill(skill.skillId,charModal.id)">
+														<div class="char-hire-button"  >UPGRADE</div>
+														<div class="char-amount-gold">
+															<div class="gold-coin-small"></div>
+															<div class="char-amount-cost">
+																{{formatNumber(skill.cost)}}
+															</div>
+														</div>
+													</a>
+												</div>
+											</div>
+										</div>
+									</div>
+		
+						</div>
+				</div>
 				<div class="game-modal" v-if="dropModal">
 					<div class="game-modal-bg" @click="dropModal = !dropModal"></div>
 					<div class="game-modal-content">
@@ -181,11 +228,13 @@
 											<div class="character-left">
 												<div class="char-img">
 														<div class="char-portrait" :style="{'background-image' : `url('heroes/${character.headImg}')`}">
-															<div class="char-stars">
-															 <div class="star"></div>
-															 <div class="star"></div>
-															 <div class="star"></div>
-															</div>
+															<a class="hero-select-link" @click="openCharModal(character)">
+																<div class="char-stars">
+																 <div class="star"></div>
+																 <div class="star"></div>
+																 <div class="star"></div>
+																</div>
+															</a>
 														</div>                        
 												</div>
 											</div>
@@ -407,9 +456,13 @@ export default {
 			console.log(data)
 			this.isBossLevel = true
 			this.bossTime = data.currentTime
+			this.isAttackable = data.canAttack
 		})
 		this.socket.on('LEVEL-CHAR', data => {
 			console.log(data)
+			var bflat = new Audio();
+			bflat.src = "audio/levelup.mp3";
+			bflat.play();
 			let updateChar = data.hero
 			let updateIndex = this.boughtHero.findIndex( slot => slot.name == updateChar.name )
 			this.boughtHero[updateIndex] = updateChar
@@ -456,7 +509,9 @@ export default {
 				}, 500)
 			
 		})
-
+		this.socket.on('connection', data => {
+			console.log(data)
+		})
 		this.socket.on('disconnect', data => {
 				console.log('please relog')
 			 // this.disconnected = true;
@@ -468,14 +523,15 @@ export default {
 		})
 		this.socket.on('ATTACK', data => {
 			this.monsterCurrentHP = data.monsterCurrentHP;
-			if(this.monsterCurrentHP < 0){
-				this.monsterCurrentHP = 0
-			}
+			// if(this.monsterCurrentHP < 0){
+			// 	this.monsterCurrentHP = 0
+			// }
 		})
 		this.socket.on('GOLD', data => {
+			console.log('received')
 			this.killMonster();
-			console.log(data)
 			var self = this
+			self.monsterCurrentHP = 0;
 			this.monsterCount = data.monsterCount,
 			this.goldCount = data.goldCount
 			this.isBossLevel = data.isBoss
@@ -484,11 +540,13 @@ export default {
 				setTimeout(() => {
 					self.image = data.currentMonster.image
 					self.monsterName = data.currentMonster.name
-					self.getNewMonster()
+					
 					self.monsterCurrentHP = data.currentMonster.monsterCurrentHP
 					self.monsterMaxHP = data.currentMonster.monsterMaxHP
+					self.getNewMonster()
+					console.log('loaded')
 			//		self.bossKilled = data.bossKilled
-				}, 1500)
+				}, 2000)
 			}
 
 		})
@@ -499,11 +557,14 @@ export default {
 		// 	// this.monsterCount = data.monsterCount
 		// 	// this.bossKilled = data.bossKilled
 		// })
+		this.socket.on('update-chars', data =>{
+			this.boughtHero = data.heroes
+		})
 		this.socket.on('READY', data => {
 				this.isAttackable = data.canAttack
 		})
 		this.socket.on('LOGIN', data => {
-		 // console.log(data)
+		  console.log(data)
 			this.loggedIn = true;
 			this.goldCount = data.gold
 			this.level = data.level
@@ -526,8 +587,6 @@ export default {
 			setTimeout(() => {
 				self.getNewMonster()      
 			}, 20)
-			this.updateDmgPos()
-			this.checkAchievements()
 			})
 		this.socket.on('LEVEL-CHANGE', data => {
 			this.monsterCount = data.monsterCount
@@ -547,7 +606,16 @@ export default {
 			return this.boughtHero.reverse()
 		},
 		availableNext: function() { 
+			// if(this.nextHero.cost < this.goldCount){
+			// 			var bflat = new Audio();
+			// 			bflat.src = "audio/chime.wav";
+			// 			bflat.loop = true
+			// 			bflat.play();
+			// }
 			return this.nextHero
+		},
+		charUpgrades: function() {
+			return this.heroUpgrades.filter(i => i.heroId == this.charModal.id)
 		},
 		currentLevelRate: function(){
 			return this.levelRate
@@ -559,6 +627,7 @@ export default {
 	data() {
 		return {
 			inventory: [],
+			charModal: false,
 			equippedWeapon : [],
 			equippedAmulet : [],
 			equippedRing : [],
@@ -613,6 +682,7 @@ export default {
 			dpcBonus: '',
 			clickCount: 0,
 			clicksPerSecond: 0,
+			availableUpgrades : '',
 			isAttacking: false,
 			dps: 0,
 			dpc: 0,
@@ -727,12 +797,75 @@ export default {
 				level: 1,
 				baseCost: 3321685,
 				baseDps: 46134,
-				cost: 3321685 }
+				cost: 3321685 },
+				        { name: 'Boop',
+        fullImg: 'boop.jpg',
+        headImg: 'boop-head.jpg',
+        dps: 168849,
+        level: 1,
+        baseCost: 16276253,
+        baseDps: 168849,
+        cost: 16276253 },
+        { name: 'Vel',
+        fullImg: 'vel.jpg',
+        headImg: 'vel-head.jpg',
+        dps: 617982,
+        level: 1,
+        baseCost: 79753623,
+        baseDps: 617982,
+        cost: 79753623 },
 			],
 			loadingPercent: 0,
 			loadingDone: false,
 			currentImage: 0,
-			preloadImagesObj: []
+			preloadImagesObj: [],
+			heroUpgrades : [
+   {
+       heroId : 0,
+       skillId : 0,
+       name : 'One for all',
+       icon : 'blah.jpg',
+       bonusType : 5,
+       bonusAmount : 0.25,
+       cost : 1,
+       requiredLevel : 10,
+   },{
+       heroId : 0,
+       skillId : 1,
+       name : 'Super Beam',
+       icon : 'blah.jpg',
+       bonusType : 5,
+       bonusAmount : 0.50,
+       cost : 1,
+       requiredLevel : 25,
+   },{
+       heroId : 0,
+       skillId : 2,
+       name : 'Limit Breaker',
+       icon : 'blah.jpg',
+       bonusType : 2,
+       bonusAmount : 0.25,
+       cost : 1,
+       requiredLevel : 50,
+   },{
+       heroId : 10,
+       skillId : 0,
+       name : 'One for all',
+       icon : 'blah.jpg',
+       bonusType : 5,
+       bonusAmount : 0.25,
+       cost : 1,
+       requiredLevel : 10,
+   },{
+       heroId : 10,
+       skillId : 1,
+       name : 'Super Beam',
+       icon : 'blah.jpg',
+       bonusType : 5,
+       bonusAmount : 0.50,
+       cost : 1,
+       requiredLevel : 25,
+   },]
 		}
 	},
 	methods: {
@@ -763,10 +896,10 @@ export default {
 		logIn(){
 				var self = this;
 			 // this.$axios.$post(`https://clickergame.tk/api/login`, { username : self.username, password : self.password})
-					this.$axios.$post(`http://localhost:3001/api/login`, { username : self.username, password : self.password})
+					this.$axios.$post(`http://localhost:3001/api/login`, { username : self.username, password : self.password, socket: this.mySocket})
 					.then((res) => {
 						this.socket.emit('CheckUser', {
-							user: this.username, socketId: this.mySocket
+							user: res.username, socketId: res.mySocket
 				})
 
 					}).catch(e => {
@@ -776,7 +909,7 @@ export default {
 		register(){
 				var self = this;
 			 // this.$axios.$post(`https://clickergame.tk/api/login`, { username : self.username, password : self.password})
-					this.$axios.$post(`http://localhost:3001/api/register`, { username : self.username, password : self.password, email : self.email})
+					this.$axios.$post(`http://localhost:3001/api/register`, { username : self.username, password : self.password, email : self.email, socket: self.mySocket})
 					.then((res) => {
 						console.log(res)
 						self.socket.emit('CheckUser', {
@@ -798,7 +931,7 @@ export default {
 		},
 		menuSound(){
 			var bflat = new Audio();
-			bflat.src = "audio/accent.mp3";
+			bflat.src = "audio/buychar.wav";
 			bflat.play();
 		},
 		redoBoss(){
@@ -885,38 +1018,44 @@ export default {
 				}, 500)
 			}
 		},
-		checkAchievements(){
-			var self = this
-			setTimeout(() => {
-			self.achievements.forEach(ach => {
-				if(ach.requireType == "click" && ach.requirement <= self.clickCount && !ach.earned && !ach.seen)
-				{
-					self.modalContent = ach.text
-					self.modalHeader = ach.name 
-					if(ach.rewardType == "dps"){
-						self.modalReward = "+" + ach.reward + '% DPS!'
-						self.dpsBonus = self.dpsBonus + ach.reward;
-					}
-					ach.seen = true
-					ach.earned = true
-					self.viewModal = true;
-				}
-				if(ach.requireType == "clicksPerSecond" && ach.requirement <= self.clicksPerSecond && !ach.earned && !ach.seen)
-				{
-					self.modalContent = ach.text
-					self.modalHeader = ach.name 
-					if(ach.rewardType == "dpc"){
-						self.modalReward = "+" + ach.reward + ' DPC!'
-						self.dpc = self.dpc + ach.reward;
-					}
-					ach.seen = true
-					ach.earned = true
-					self.viewModal = true;
-				}
+		// checkAchievements(){
+		// 	var self = this
+		// 	setTimeout(() => {
+		// 	self.achievements.forEach(ach => {
+		// 		if(ach.requireType == "click" && ach.requirement <= self.clickCount && !ach.earned && !ach.seen)
+		// 		{
+		// 			self.modalContent = ach.text
+		// 			self.modalHeader = ach.name 
+		// 			if(ach.rewardType == "dps"){
+		// 				self.modalReward = "+" + ach.reward + '% DPS!'
+		// 				self.dpsBonus = self.dpsBonus + ach.reward;
+		// 			}
+		// 			ach.seen = true
+		// 			ach.earned = true
+		// 			self.viewModal = true;
+		// 		}
+		// 		if(ach.requireType == "clicksPerSecond" && ach.requirement <= self.clicksPerSecond && !ach.earned && !ach.seen)
+		// 		{
+		// 			self.modalContent = ach.text
+		// 			self.modalHeader = ach.name 
+		// 			if(ach.rewardType == "dpc"){
+		// 				self.modalReward = "+" + ach.reward + ' DPC!'
+		// 				self.dpc = self.dpc + ach.reward;
+		// 			}
+		// 			ach.seen = true
+		// 			ach.earned = true
+		// 			self.viewModal = true;
+		// 		}
+		// 	})
+		// 	self.clicksPerSecond = 0;
+		// 	this.checkAchievements()
+		// 	}, 1000)
+		// },
+		purchaseSkill(skillId, heroId){
+			this.socket.emit('BUY-SKILL', {
+				skillId : skillId,
+				heroId  : heroId
 			})
-			self.clicksPerSecond = 0;
-			this.checkAchievements()
-			}, 1000)
 		},
 		buyCharacter(charName){
 			
@@ -1113,37 +1252,37 @@ export default {
 			//     this.dps = totalDps
 			//   }
 		},
-		updateDmgPos(){
+		// updateDmgPos(){
 
-			if(this.recentHits.length > 10)
-			{
-			  for(let i = this.recentHits.length; i > 10; i--)
-			  {
-			    this.recentHits.shift()
-			  }
-			}
-			var self = this
-			    setTimeout(() => {
-			      self.recentHits.forEach(hit => {
-			        hit.x = hit.x + 5;
-			        if(hit.y > hit.maxY && !hit.maxYHit)
-			        {
-			           hit.y = hit.y + 5;
-			        }
-			        if(hit.y < hit.maxY)
-			        {
-			          hit.maxYHit = true
-			          hit.y = hit.y - 4;
-			        }
-			        if(hit.maxYHit)
-			        {
-			          hit.y = hit.y - 4;
-			        }
+		// 	if(this.recentHits.length > 10)
+		// 	{
+		// 	  for(let i = this.recentHits.length; i > 10; i--)
+		// 	  {
+		// 	    this.recentHits.shift()
+		// 	  }
+		// 	}
+		// 	var self = this
+		// 	    setTimeout(() => {
+		// 	      self.recentHits.forEach(hit => {
+		// 	        hit.x = hit.x + 5;
+		// 	        if(hit.y > hit.maxY && !hit.maxYHit)
+		// 	        {
+		// 	           hit.y = hit.y + 5;
+		// 	        }
+		// 	        if(hit.y < hit.maxY)
+		// 	        {
+		// 	          hit.maxYHit = true
+		// 	          hit.y = hit.y - 4;
+		// 	        }
+		// 	        if(hit.maxYHit)
+		// 	        {
+		// 	          hit.y = hit.y - 4;
+		// 	        }
 							
-			      })   
-			      self.updateDmgPos()       
-			    }, 1000/120)
-		},
+		// 	      })   
+		// 	      self.updateDmgPos()       
+		// 	    }, 1000/120)
+		// },
 		showDamageNumbers(offsetX, offsetY, amount){
 				if(offsetX < 0 || offsetY < 0)
 				{
@@ -1256,6 +1395,9 @@ export default {
 				document.getElementsByClassName('health')[0].classList.add('health-anim-slow')
 			} , 500)
 		},
+		openCharModal(char){
+			this.charModal = char;
+		},
 		getHealthColor(num){
 			if(num >= 70 )
 			{
@@ -1300,9 +1442,9 @@ font-family: 'Titillium Web', sans-serif;
 		border-radius: 1em;
 		box-shadow: 0 0 0 1px black, 0 0 0 3px #968610, 0 0 14px 2px black;
     -webkit-animation: slide 0.5s forwards;
-    -webkit-animation-delay: 1s;
+    -webkit-animation-delay: 0s;
     animation: slide 0.5s forwards;
-    animation-delay: 1s;
+    animation-delay: 0s;
     opacity: 0;
     z-index: 999;
 }
@@ -1352,6 +1494,9 @@ font-family: 'Titillium Web', sans-serif;
 }
 
 @keyframes slide {
+/*	  0% { width: 30em; }
+	  25% { width: 60em; }
+	  40% { width: 50em; }*/
     100% { margin-top: 0; opacity: 1 }
 }
 .game-modal-bg {
@@ -1360,11 +1505,11 @@ font-family: 'Titillium Web', sans-serif;
 		height: 100%;
 		position: absolute;
 		z-index: 200;
-    -webkit-animation: slide 0.5s forwards;
-    -webkit-animation-delay: 1s;
+/*    -webkit-animation: slide 0.5s forwards;
+    -webkit-animation-delay: 0s;
     animation: slide 0.5s forwards;
-    animation-delay: 1s;
-    opacity: 0;
+    animation-delay: 0s;*/
+    opacity: 1;
     z-index: 999;
 }
 .monster-status {
@@ -2122,6 +2267,76 @@ span.level-rate {
 							 rotate(-360deg);
 	}
 }
+.char-modal-right {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    flex-direction: column;
+    margin-left: 2em;
+    width: 100%;
+}
+span.char-modal-name {
+    font-size: 1.5em;
+    color: white;
+    text-shadow: 1px 1px 0px black, -1px -1px 0px black, 1px -1px 0px black, -1px 1px 0px black;
+    font-style: normal;
+    line-height: 1;
+}
+.char-modal-port-name {
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    position: absolute;
+    bottom: -30px;
+    background: radial-gradient(ellipse at center, rgb(42, 38, 43) 0%, rgb(44, 39, 45) 140%);
+    font-weight: bold;
+    padding: 0.25em;
+    padding-left: 2em;
+    padding-right: 2em;
+    border-radius: 1em;
+    box-shadow: 0 0 0 1px black, 0px 0px 0 3px #ecf2f3, 0 0 0px 4px black;
+}
+.char-modal-left {
+    height: 100%;
+    width: 80%;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    border-radius: 1em;
+    box-shadow: 0 0 0 1px black, 0 0 0 3px #ecf2f3, 0 0 0px 4px black;
+}
+.char-upgrade-content {
+		border-radius: 1em;
+		box-shadow: 0 0 0 1px black, 0 0 0 3px #968610, 0 0 14px 2px black;
+    -webkit-animation: slide 0.5s forwards;
+    -webkit-animation-delay: 0s;
+    animation: slide 0.5s forwards;
+    animation-delay: 0s;
+    opacity: 0;
+    width: 80%;
+    height: 35em;
+    z-index: 999;
+    display: flex;
+		background: #4e5671;
+		align-items: center;
+		justify-content: center;
+		flex-direction: row;
+		padding: 2em;
+		padding-bottom: 3em;
+		color: #e2e0e0;
+}
+.character-upgrade-modal {
+    position: absolute;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
 .skills {
 		width: 4em;
 		height: 100%;
@@ -2215,6 +2430,7 @@ span.level-rate {
 		z-index: 20;
 		background-repeat: no-repeat;
 }
+
 .character-left {
 		height: 100%;
 		display: flex;
@@ -2435,6 +2651,11 @@ span.level-rate {
 		background-size: cover;
 		left: -10%;
 		bottom: -13%;
+}
+a.hero-select-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 .chest-area:hover {
 	animation: shake 1s infinite;
