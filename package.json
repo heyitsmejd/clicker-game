@@ -1,7 +1,7 @@
 {
-  "name": "clicker",
+  "name": "ClickerGame",
   "version": "1.0.0",
-  "description": "My first-class Nuxt.js project",
+  "description": "Clickly Click.",
   "author": "heyitsmejd",
   "private": true,
   "scripts": {
