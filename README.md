@@ -1,6 +1,6 @@
 # clicker
 
-> My first-class Nuxt.js project
+> This is the front-end for Heroes of the World that is made using Vue.js. It communicates and emits events to the Node.js back-end using web-sockets. Both the server and client must be run for either to work.
 
 ## Build Setup
 
@@ -19,4 +19,3 @@ $ npm start
 $ npm run generate
 ```
 
-For detailed explanation on how things work, checkout [Nuxt.js docs](https://nuxtjs.org).
